@@ -1,0 +1,16 @@
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/Bid.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/BidPoint.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/CRRServiceException.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/CrrType.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/ErrorDetail.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/HedgeType.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/NewBid.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/NewOffer.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/NewPortfolio.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/Offer.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/Portfolio.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/PortfolioCredit.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/PortfolioIdentifier.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/PortfolioStatus.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/PortfolioStatusType.java
+/Users/skondreddy/sescodev/github/sescoapps/caisocrrclient/src/main/java/model/TimeOfUse.java
