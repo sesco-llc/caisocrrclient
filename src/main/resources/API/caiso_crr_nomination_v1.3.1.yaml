@@ -1,0 +1,851 @@
+openapi: 3.0.0
+servers:
+  - description: Mapstage Server Endpoint
+    url: https://mapstage-api.caiso.com/crr
+info:
+  description: OpenAPI allows CRR nominations submission and status download. <table><tr><td>OpenAPI Spec Revision</td><td>Date</td><td>Change Log</td></tr><tr><td>1.0.0</td><td>2024-01-10</td><td>Initial Version</td></tr><tr><td>1.1.0</td><td>2024-06-12</td><td>Revised regex patterns for validations for model 'NewNomination' attribute 'description'; Revised regex patterns for validations for model 'NewPortfolio' attribute 'portfolioName'; Revised regex patterns for validations for model 'Nomination' attribute 'description'; Added regex patterns for validations for model 'PortfolioIdentifier' attribute 'portfolioName' and 'marketName'; Revised regex patterns for validations for model 'PortfolioStatus' attribute 'portfolioName'</td></tr><tr><td>1.1.1</td><td>2024-06-12</td><td>Fixed typographical errors</td></tr><tr><td>1.1.2</td><td>2024-07-22</td><td>Added an error code 'SER0017'; Updated API summary a very high level preview of what the endpoint achieves and the description can explain it a bit further; Revised description for model 'PortfolioStatusType'</td></tr><tr><td>1.1.3</td><td>2024-08-05</td><td>Updated all attribute 'PortfolioName' regex spec; Added an error code SER0022 'Portfolio name can contain alphanumeric or alphanumeric with one or more space, underscore, hyphen and dot.'; Make sure 'portfolioName', 'marketName', 'participantName' uses pattern specs and added error codes SER0018, SER0019, SER0020 and SER0021.</td></tr><tr><td>1.1.4</td><td>2024-08-22</td><td>Made sure Auction and Nomination APIs are using the same pattern checks.</td></tr><tr><td>1.1.5</td><td>2024-09-03</td><td>Update 'PortfolioName' maxLength specification from 50 chars to 100 chars.</td></tr><tr><td>1.1.6</td><td>2024-09-03</td><td>Add new error codes  SER0022 SER0008 AUC0038 AUC0051  to spec description.</td></tr></tr><tr><td>1.2.0</td><td>2024-09-09</td><td>Delete api structure change to match GET /portfolio.</td></tr><tr><td>1.2.1</td><td>2024-10-03</td><td>Added an error code SEC0002.</td></tr><tr><td>1.3.0</td><td>2024-11-04</td><td>Update all date-time field examples and remove 'milliseconds' component.; Update CRRServiceException by having an array of 'ErrorDetail' which contain severity, errorCode, and errorDescription; Add comments to description of CRRServiceException; Replace error code SER0018 with GEN0003; Replace error code ATH0002 with SEC0001; Remove error code MKT0002 because CAISO does not have market round specification.; Change prefix of error codes in description of 'CRRServiceException' to 'POR' for Portfolio Validations that are applicable to both Nomination and Auction APIs; Add error code SER0030 for error from other generic data validations or error in the individual record in the body;  Update responses to have HTTP status codes 403, 404, and 500 with content of object CRRServiceException; Error code SER0028 is used for response 404 and error code SER0029 for response 500;</td></tr><tr><td>1.3.1</td><td>2024-12-20</td><td>Add new error codes  POR0011 and POR0012 to spec description.</td></tr></table>
+  version: 1.3.1
+  title: CRR Nomination API
+  contact:
+    email: servicedesk@caiso.com
+tags:
+  - name: CRR Nomination Write
+    description: require read/write access
+  - name: CRR Nomination Read
+    description: requires read only
+paths:
+  /nomination/v1.0/portfolio:
+    get:
+      tags:
+        - CRR Nomination Read
+      summary: Gets nominations from given market name
+      operationId: portfolio
+      description: |
+        By passing in the appropriate market name, portfolio name and participant name, the portfolio will be returned.
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/PortfolioName'
+        - $ref: '#/components/parameters/ParticipantName'
+
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+    delete:
+      tags:
+        - CRR Nomination Write
+      summary: Deletes a portfolio
+      operationId: deletePortfolio
+      description: Deletion of portfolio from the system
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/PortfolioName'
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: Portfolio Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioStatus'
+          
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'                   
+  /nomination/v1.0/portfolioList:
+    get:
+      tags:
+        - CRR Nomination Read
+      summary: Gets a portfolio list from given market name
+      operationId: portfolioList
+      description: |
+        By passing in the appropriate market name and participant name, a list of existing portfolios for the market is returned.
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/ParticipantName'
+
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Portfolio'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'                   
+  /nomination/v1.0/portfolioStatus:
+    get:
+      tags:
+        - CRR Nomination Read
+      summary: Gets status of a portfolio from given market name
+      operationId: portfolioStatus
+      description: |
+        By passing in the appropriate market name and portfolio name 
+        the portfolio will be returned
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/PortfolioName'
+        - $ref: '#/components/parameters/ParticipantName'
+
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'                   
+  /nomination/v1.0/portfolioCreation:
+    post:
+      tags:
+        - CRR Nomination Write
+      summary: Creates a new nomination portfolio
+      operationId: portfolioCreation
+      description: Adds a new nomination portfolio for a specified allocation market. If the market has multiple periods, each nomination is for a period and nominations for various applicable periods can be in the same portfolio.
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+      responses:
+        '200':
+          description: Portfolio Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'   
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPortfolio'
+        description: Nomination Portfolio to add
+        
+  /nomination/v1.0/portfolioSubmission:
+    post:
+      tags:
+        - CRR Nomination Write
+      summary: Submits a nomination portfolio
+      operationId: portfolioSubmission
+      description: Submits a nomination portfolio to an allocation market for the specified participant
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+      responses:
+        '200':
+          description: Portfolio Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioStatus'
+          
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'   
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PortfolioIdentifier'
+        description: Portfolio Name, Allocation Market Name, and Participant Name
+        
+  /nomination/v1.0/portfolioRetraction:
+    post:
+      tags:
+        - CRR Nomination Write
+      summary: Retracts a portfolio from being submitted to an allocation market
+      operationId: portfolioRetraction
+      description: Retraction of nomination portfolio from the specified allocation market for the specified participant
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+      responses:
+        '200':
+          description: Portfolio Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioStatus'
+          
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'   
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PortfolioIdentifier'
+        description: Portfolio Name, Allocation Market Name, and Participant Name
+   
+components:
+  parameters:
+    MarketName:
+      in: query
+      name: marketName
+      description: name of CRR Allocation market
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 50
+    PortfolioName:       
+      in: query
+      name: portfolioName
+      description:  name of CRR nomination portfolio
+      required: true
+      schema:
+        type: string
+        pattern: '^(?!.*[\s\._-])[A-Za-z0-9]+$|^(?=.*[A-Za-z0-9])[A-Za-z0-9\s\._-]+$'
+        maxLength: 100
+    ParticipantName:
+      in: query
+      name: participantName
+      description: Market Participant Name
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 10
+      example: CISO
+  
+    CAISORequestUUID:
+      in: header
+      name: caiso-request-id
+      description: An HTTP header with a unique UUID (Universal Unique Identifier) for every request
+      schema:
+        type: string
+        format: uuid
+      required: true
+      example: c9b09ec1-3a3a-4e68-a4d7-89aece526b05
+  
+  schemas:
+    CRRServiceException:
+        description: |
+          <table>
+            <tr>
+              <th>Error Code</th>
+              <th>Description</th>
+              <th>Comment</th>
+            </tr>
+            <tr>
+              <td> POR0010 </td>
+              <td> Portfolio "{0}" cannot be deleted because it is in SUBMITTED or PENDING RETRACTION status. </td>
+              <td> Portfolio Validation </td>
+            </tr>  
+            <tr>
+              <td> POR0011 </td>
+              <td> Unable to retract portfolio due to portfolio is in errors. </td>
+              <td> Portfolio Validation </td>
+            </tr> 
+            <tr>
+              <td> POR0012 </td>
+              <td> Unable to retract portfolio due to portfolio is new and empty. </td>
+              <td> Portfolio Validation </td>
+            </tr> 
+            <tr>
+              <td> POR0013 </td>
+              <td> Portfolio "{0}" is empty and prohibited to be submitted. </td>
+              <td> Portfolio Validation </td>
+            </tr>            
+            <tr>
+              <td> POR0023 </td>
+              <td> Portfolio "{0}" does not belong to the specified participant "{1}". </td>
+              <td> Portfolio Validation </td>
+            </tr>            
+            <tr>
+              <td> POR0038 </td>
+              <td> Portfolio "{0}" is not in SUBMITTED status and cannot be retracted. </td>
+              <td> Portfolio Validation </td>
+            </tr>
+            <tr>
+              <td> POR0051 </td>
+              <td> Portfolio "{0}" has already been submitted to market "{1}" or it is still in pending retraction. </td>
+              <td> Portfolio Validation </td>
+            </tr>            
+            <tr>
+              <td> POR0100 </td>
+              <td> Portfolio Name does not exist for the specified market name, portfolio name, and participant name. </td>
+              <td> Portfolio Validation </td>
+            </tr>    
+            <tr>
+              <td> POR0101 </td>
+              <td> Portfolio by name "{0}" already exists for the specified market name and participant name. </td>
+              <td> Portfolio Validation </td>
+            </tr>            
+            <tr>
+              <td> POR0103 </td>
+              <td> Portfolio Name "{0}" must be less than or equal to 100 characters. </td>
+              <td> Portfolio Validation </td>
+            </tr>  
+            <tr>
+              <td> POR0215 </td>
+              <td> Invalid Portfolio Name. It cannot be blank. </td>
+              <td> Portfolio Validation </td>
+            </tr>
+            <tr>
+              <td> POR0306 </td>
+              <td> The portfolio is being edited by another session. Please try again later. </td>
+              <td> Portfolio Validation </td>
+            </tr>
+            <tr>
+              <td> POR0308 </td>
+              <td> Unable to access portfolio with name "{0}". Please try again later. </td>
+              <td> Portfolio Validation </td>
+            </tr>            
+            <tr>
+              <td> GEN0003 </td>
+              <td> System is busy due to too many users, please try again later. </td>
+              <td> Generic System Validation </td>
+            </tr>
+            <tr>
+              <td> MKT0001 </td>
+              <td> Market name does not exist in the system. </td>
+              <td> Market Validation </td>
+            </tr>
+            <tr>
+              <td> MKT0002 </td>
+              <td> Round name does not exist or is not associated with the specified market. </td>
+              <td> Market Validation </td>
+            </tr>
+            <tr>
+              <td> MKT0004 </td>
+              <td> Submission window of the market is closed.  </td>
+              <td> Market Validation </td>
+            </tr>
+            <tr>
+              <td> NOM0101 </td>
+              <td> Portfolio "{0}" of allocation "{1}" cannot be submitted because it is in ERROR status. </td>
+              <td> Nomination Validation </td>
+            </tr>            
+            <tr>
+              <td> NOM0128 </td>
+              <td> Unable to submit portfolio due to MP eligibility or window is closed. </td>
+              <td> Nomination Validation </td>
+            </tr>
+            <tr>
+              <td> NOM0129 </td>
+              <td> Unable to retract portfolio due to MP eligibility or window is closed. </td>
+              <td> Nomination Validation </td>
+            </tr>
+            <tr>
+              <td> SEC0001 </td>
+              <td> Access for Market Participant {0} is denied due to insufficient privilege. </td>
+              <td> Security Validation </td>
+            </tr>
+            <tr>
+              <td> SEC0002 </td>
+              <td> Access Denied. Please contact your Local Security Administrator. </td>
+              <td> Security Validation </td>
+            </tr>
+            <tr>
+              <td> SER0001 </td>
+              <td> Please report the issue and provide the API access parameters to CAISO. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0015 </td>
+              <td> Portfolio creation was unsuccessful. Please correct any errors in parameters and payloads and try again. If the issue persists, please contact CAISO. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0016 </td>
+              <td> Not allowed to remove portfolio. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0017 </td>
+              <td> Invalid request "{0}". </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0022 </td>
+              <td> Portfolio name can contain alphanumeric or alphanumeric with one or more space, underscore, hyphen and dot. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0028 </td>
+              <td> Internal Service Error </td>
+              <td> Service and Business validation for response in 500</td>
+            </tr>
+            <tr>
+              <td> SER0029</td>
+              <td> Cannot find a resource </td>
+              <td> Service and Business validation for response in 404</td>
+            </tr>            
+            <tr>
+              <td> SER0030 </td>
+              <td> {0}</td>
+              <td> Service and Business validation. Error from other generic data validations or error in the individual record in the body </td>
+            </tr>
+          </table>
+        type: object
+        required:
+          - errorList
+          - creationTime
+  
+        properties:
+          errorList:
+            type: array
+            items:
+              $ref: '#/components/schemas/ErrorDetail'
+          creationTime:
+            type: string
+            description: date and time when the error is issued.
+            format: date-time
+            example: '2099-07-04T09:12:33Z'
+          serviceVersion:
+            type: string
+            description: version of service
+            maxLength: 10
+            example: 'V1.0'
+    ErrorDetail:
+      type: object
+      required:
+        - errorCode
+        - errorDescription
+        - severity
+
+      properties:  
+          errorDescription:
+            type: string
+            description: "JSON syntax error, error in the input parameter of the request (such as the object identifier does not exist), generic data validation (such as the submission window is not open), or error in the individual record"
+            maxLength: 1000
+            example: "Error description."
+          errorCode:
+            type: string
+            description: error code
+            maxLength: 15
+            example: 'XXX0000'
+          severity:
+            type: string
+            enum:
+              - FATAL
+              - ERROR                    
+    ParticipantName:
+      type: string
+      maxLength: 10
+      pattern: '^([a-zA-Z0-9\. _-]+)$'
+      example: CISO  
+    HedgeType:
+      type: string
+      description: CRR Hedge Type Obligation (OBL) or Option (OPT)
+      enum:
+        - OBL
+        - OPT
+    Megawatt:
+      type: number
+      description: quantity unit of CRR
+      pattern: '[\-+]?[\d]+\.?\d?\d?\d?'
+      format: double
+      minimum: 0.001
+      multipleOf: 0.001
+      example: 0.1    
+    TimeOfUse:
+      type: string
+      description: Time-of-Use
+      enum:
+        - ON
+        - OFF
+    CrrType:
+      type: string
+      description: CRR Type
+      enum:
+        - LSE
+        - OBAALSE
+          
+    NewNomination:
+      type: object
+      required:
+        - assetOwner
+        - source
+        - sink
+        - hedgeType
+        - tou
+        - period
+        - crrType
+        - mw
+
+      properties:
+        assetOwner:
+          type: string
+          description: name of CRR asset owner which is SC ID
+          maxLength: 10
+          pattern: '^([a-zA-Z0-9\. _-]+)$'
+          example : 'ABC1'
+        source:
+          type: string
+          description: name of source for CRR Nomination
+          maxLength: 150
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example : 'Source_1'
+        sink:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of sink for CRR Nomination
+          maxLength: 150
+          example : 'Sink_1'
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        period:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of effective period
+          maxLength: 20
+          example: '2024_S01'
+        crrType:
+          $ref: '#/components/schemas/CrrType'
+        mw:
+          $ref: '#/components/schemas/Megawatt'
+        description:
+          type: string
+          pattern: '^([a-zA-Z0-9\#\@\. _-]*)$'
+          description: optional text for customized note or reference
+          maxLength: 512
+          example: 'My nomination ID 1000'          
+      
+    NewPortfolio:
+      type: object
+      required:
+        - portfolioName
+        - marketName
+        - newNominations
+        - participantName
+      properties:
+        portfolioName:
+          type: string
+          pattern: '^(?!.*[\s\._-])[A-Za-z0-9]+$|^(?=.*[A-Za-z0-9])[A-Za-z0-9\s\._-]+$'
+          maxLength: 100
+          description: name of CRR nomination portfolio
+          example: Portfolio XYZ
+        marketName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 50
+          description: name of CRR Allocation market
+          example: ALLOC_AN_2024_T1
+        newNominations:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewNomination'
+        participantName:
+          $ref: '#/components/schemas/ParticipantName'     
+    Nomination:
+      type: object
+      required:
+        - nominationId
+        - assetOwner
+        - source
+        - sink
+        - hedgeType
+        - tou
+        - period
+        - crrType
+        - mw
+
+      properties:
+        nominationId:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          description: unique identifier assigned to a nomination by the CRR System upon save
+          example : 123456
+        assetOwner:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 10
+          description: name of CRR asset owner which is SC ID
+          example : 'ABC1'
+        source:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 150
+          description: name of source for CRR Nomination
+          example : 'Source_1'
+        sink:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 150
+          description: name of sink for CRR Nomination
+          example : 'Sink_1'
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        period:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 20
+          description: seasonal or monthly effective period of CRR nomination
+          example: '2024_S01'
+        crrType:
+          $ref: '#/components/schemas/CrrType'
+        mw:
+          $ref: '#/components/schemas/Megawatt'
+        description:
+          type: string
+          pattern: '^([a-zA-Z0-9\#\@\. _-]*)$'
+          maxLength: 512
+          description: optional text for customized note or reference
+          example: 'My nomination ID 1000' 
+
+    Portfolio:
+      type: object
+      required:
+        - portfolioName
+        - marketName
+        - nominations
+      properties:
+        portfolioName:
+          type: string
+          pattern: '^(?!.*[\s\._-])[A-Za-z0-9]+$|^(?=.*[A-Za-z0-9])[A-Za-z0-9\s\._-]+$'
+          maxLength: 100
+          description: name of CRR nomination portfolio
+          example: Portfolio XYZ
+        marketName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 50
+          description: name of CRR Allocation market
+          example: ALLOC_AN_2024_T1
+        nominations:
+          type: array
+          description: a list of nominations in the portfolio
+          items:
+            $ref: '#/components/schemas/Nomination'
+    PortfolioIdentifier:
+      type: object
+      required:
+        - portfolioName
+        - market       
+        - participantName
+      properties:
+        portfolioName:
+          type: string
+          pattern: '^(?!.*[\s\._-])[A-Za-z0-9]+$|^(?=.*[A-Za-z0-9])[A-Za-z0-9\s\._-]+$'
+          maxLength: 100
+          description: name of CRR nomination portfolio
+          example: Portfolio XYZ
+        marketName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 50
+          description: name of CRR Allocation market
+          example: ALLOC_AN_2024_T1
+        participantName:
+          $ref: '#/components/schemas/ParticipantName'
+            
+    PortfolioStatusType:
+      type: string
+      description: Status NEW is assigned to a blank portfolio. Status VALID is assigned to a portfolio containing valid nominations. Status INVALID is assigned to a portfolio containing one or more invalid nominations. A nomination with an INVALID status is saved only if the record is added to the portfolio using Add and Save button in MUI Nomination Editor. INVALID portfolio created from API and MUI upload is not saved. Status SUBMITTED is assigned to a portfolio after portfolio submission is successful. Status REJECTED is a transitional status to VALID status after portfolio submission is rejected. Status DELETED is a confirmation of the portfolio deletion.
+      enum:
+        - INVALID
+        - VALID
+        - SUBMITTED
+        - REJECTED
+        - DELETED
+        - NEW
+      
+    PortfolioStatus:
+      type: object
+      required:
+        - portfolioName
+        - marketName
+        - status
+
+      properties:
+        portfolioName:
+          type: string
+          pattern: '^(?!.*[\s\._-])[A-Za-z0-9]+$|^(?=.*[A-Za-z0-9])[A-Za-z0-9\s\._-]+$'
+          maxLength: 100
+          description: name of CRR nomination portfolio
+          example: Portfolio XYZ
+        marketName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 50
+          description: name of CRR Allocation market
+          example: ALLOC_AN_2024_T1
+        status:
+          $ref: '#/components/schemas/PortfolioStatusType'
+        errorMessage:
+          type: string
+          description: error message or error report indicating the reason that the portfolio is in INVALID status from portfolio that contains nominations created from MUI Nomination Editor or from portfolio submission.
+          maxLength: 2147483647
+          example: 'Total MW = 100 exceeds the allowed MW = 40 for SEQ with sink R1, CRR type LSE, period 2025_S03, and TOU ON.; Total MW = 100 exceeds the allowed MW = 70 for SEQ with sink R2, CRR type LSE, period 2025_S03, and TOU ON.;'

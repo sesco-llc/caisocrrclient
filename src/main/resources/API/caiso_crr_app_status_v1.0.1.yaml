@@ -1,0 +1,46 @@
+openapi: 3.0.0
+info:
+  title: CRR App Status API
+  description: This includes all openapi services for checking service availability to CRR System. <table><tr><td>OpenAPI Spec Revision</td><td>Date</td><td>Change Log</td></tr><tr><td>1.0.0</td><td>2024-01-10</td><td>Initial Version</td></tr><tr><td>1.0.1</td><td>2024-07-22</td><td>Updated API summary a very high level preview of what the endpoint achieves and the description can explain it a bit further</td></tr></table>
+  contact:
+    email: servicedesk@caiso.com
+  version: "1.0.1"
+servers:
+- url: https://mapstage-api.caiso.com/crr
+  description: Mapstage Server Endpoint
+tags:
+  - name: CRR App Status Read
+    description: requires read only
+paths:
+  /status:                
+    get:
+      tags:
+      - CRR App Status Read   
+      summary: Gets a CRR WS app status
+      description: Ping to see whether the application is available and response will be a static string 'up'
+      operationId: "get-status"
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+      responses:
+        '200':
+          description: Successful retrieve of status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    maxLength: 2048
+                    example: 'up'
+components:
+  parameters:
+    CAISORequestUUID:
+      in: header
+      name: caiso-request-id
+      description: An HTTP header with a unique UUID (Universal Unique Identifier) for every request
+      schema:
+        type: string
+        format: uuid
+      required: true
+      example: c9b09ec1-3a3a-4e68-a4d7-89aece526b05

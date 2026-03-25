@@ -1,0 +1,700 @@
+openapi: 3.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/RI-GM/caiso_crr_market_data_v1.0.0/1.2.0
+  - description: Mapstage Server Endpoint
+    url: https://mapstage-api.caiso.com/crr
+info:
+  description: CRR Market Data OpenAPI allows CRR Market Data and CRR Nomination Cap Data Download.\n <table><tr><td>OpenAPI Spec Revision</td><td>Date</td><td>Change Log</td></tr><tr><td>1.0.0</td><td>2024-01-10</td><td>Initial Version</td></tr><tr><td>1.1.0</td><td>2024-06-12</td><td>Added missing 'SET_ASIDE' enum back to model 'PublicMarketDownloadType' and revised its description</td></tr><tr><td>1.1.1</td><td>2024-06-12</td><td>Fixed typographical errors</td></tr><tr><td>1.1.2</td><td>2024-07-22</td><td>Added an error code 'SER0017'; Updated API summary a very high level preview of what the endpoint achieves and the description can explain it a bit further</td></tr><tr><td>1.1.3</td><td>2024-10-08</td><td>Added an error code 'MKT0007'.</td></tr><tr><td>1.2.0</td><td>2024-11-05</td><td>Update all date-time field examples and remove 'milliseconds' component;  Update CRRServiceException by having an array of 'ErrorDetail' which contain severity, errorCode, and errorDescription; Add comments to description of CRRServiceException; Replace error code ATH0002 with SEC0001; Remove error codes that are not applicable to CRR market data APIs; Add error code SER0030 for error from other generic data validations or error in the individual record in the body; Update responses to have HTTP status codes 403, 404, and 500 with content of object CRRServiceException; Error code SER0028 is used for response 404 and error code SER0029 for response 500; Update JSON schema version numbers in the descriptions of download types;</td></tr></table>
+  version: 1.2.0
+  title: CRR Market Data API
+  contact:
+    email: servicedesk@caiso.com
+tags:
+  - name: CRR Market Data Read
+    description: requires read only
+paths:
+  /marketdata/v1.0/publicGeneralData:
+    get:
+      tags:
+        - CRR Market Data Read
+      summary: Gets public general data
+      operationId: getPublicGeneralData
+      description: gets public general data by given download type and download file format
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/PublicGeneralDownloadType'
+        - $ref: '#/components/parameters/FileFormat'        
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: A compressed object containing requested data
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: string
+                    format: binary
+                    description: Base64-encoded contents of the data
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+  /marketdata/v1.0/publicMarketData:
+    get:
+      tags:
+        - CRR Market Data Read
+      summary: Gets public market data
+      operationId: getPublicMarketData
+      description: gets public market data by given market name, download type, and download file format
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/PublicMarketDownloadType'
+        - $ref: '#/components/parameters/FileFormat'        
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: A compressed object containing requested data
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: string
+                    format: binary
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+  /marketdata/v1.0/publicAllocationResult:
+    get:
+      tags:
+        - CRR Market Data Read
+      summary: Gets public allocation results
+      operationId: getPublicAllocationResult
+      description: gets public allocation results by given download type and download file format
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/PublicAllocationResultDownloadType'
+        - $ref: '#/components/parameters/FileFormat'        
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: A compressed object containing requested data
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: string
+                    format: binary
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'  
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+  /marketdata/v1.0/publicAuctionResult:
+    get:
+      tags:
+        - CRR Market Data Read
+      summary: Gets public auction results
+      operationId: getPublicAuctionResult
+      description: gets public auction results by given download type and download file format
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/PublicAuctionResultDownloadType'
+        - $ref: '#/components/parameters/FileFormat'        
+        - $ref: '#/components/parameters/ParticipantName'
+       # PublicAuctionResultDownloadType
+      responses:
+        '200':
+          description: A compressed object containing requested data
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: string
+                    format: binary
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+  /marketdata/v1.0/privateGeneralData:
+    get:
+      tags:
+        - CRR Market Data Read
+      summary: Gets private general data
+      operationId: getPrivateGeneralData
+      description: gets private general data by given download type and download file format
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/PrivateGeneralDownloadType'
+        - $ref: '#/components/parameters/FileFormat'        
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: A compressed object containing requested data
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: string
+                    format: binary
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+  /marketdata/v1.0/privateAllocationMarketData:
+    get:
+      tags:
+        - CRR Market Data Read
+      summary: Gets private seasonal, monthly eligible quantities, sink upper bound, or signature pair data
+      operationId: getPrivateAllocationMarketData
+      description: Private seasonal or monthly eligible quantities, sink upper bound, or signature pair data provides MW limits for CRR nominations to be submitted to an allocation market.
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/NominationCapCalcName'
+        - $ref: '#/components/parameters/PrivateAllocationDataDownloadType'
+        - $ref: '#/components/parameters/FileFormat'
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: A compressed object containing requested data
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: string
+                    format: binary
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+  /marketdata/v1.0/privateAllocationResult:
+    get:
+      tags:
+        - CRR Market Data Read
+      summary: Gets private allocation results
+      operationId: getPrivateAllocationResult
+      description: gets public allocation results by given download type and download file format
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/PrivateAllocationResultDownloadType'
+        - $ref: '#/components/parameters/FileFormat'        
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: A compressed object containing requested data
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: string
+                    format: binary
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+  /marketdata/v1.0/privateAuctionResult:
+    get:
+      tags:
+        - CRR Market Data Read
+      summary: Gets private auction results
+      operationId: getPrivateAuctionResult
+      description: gets private auction results by given auction market name, download type, download file format, and participant name
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/PrivateAuctionResultDownloadType'
+        - $ref: '#/components/parameters/FileFormat'        
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: A compressed object containing requested data
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: string
+                    format: binary
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+components:
+  parameters:
+    ParticipantName:
+      in: query
+      name: participantName
+      description: Market Participant Name
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 64
+      example: 'CISO'
+    FileFormat:
+      in: query
+      name: fileFormat
+      description: file extension
+      required: true
+      schema:
+        enum:
+          - CSV
+          - JSON      
+    PublicGeneralDownloadType:
+      in: query
+      name: publicGeneralDownloadType
+      description: Public General Download Types include public existing CRRs in the system (PUBLIC_EXISTING_CRR uses CRRExistingCRRs_v1.1.2.draft-07.schema.json) and a list of source/sink replacement (SOURCE_SINK_REPLACEMENT uses CRRSourceandSinkNameMapping_v1.0.1.draft-07.schema.json).
+      required: true
+      schema:
+        type: string
+        enum:
+          - PUBLIC_EXISTING_CRR 
+          - SOURCE_SINK_REPLACEMENT
+    MarketName:
+      in: query
+      name: marketName
+      description: The name of the market
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 50
+    NominationCapCalcName:
+      in: query
+      name: nominationCapCalcName
+      description: The name of the nomination cap calculation
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 40    
+    PublicMarketDownloadType:
+      in: query
+      name: publicMarketDownloadType
+      description: Public Market Download Types include public grouped base loading CRRs (GROUPED_BASE_LOADING uses CRRGroupedBaseLoading_v1.0.2.draft-07.schema.json), source/sink list (SOURCE_SINK uses CRRSourceSink_v1.0.1.draft-07.schema.json) of a CRR market. Some markets will also have available interface constraint Set Aside data (SET_ASIDE uses CRRSetAside_v1.1.1.draft-07.schema.json).
+      required: true
+      schema:
+        type: string
+        enum:
+          - GROUPED_BASE_LOADING
+          - SOURCE_SINK  
+          - SET_ASIDE
+    PublicAllocationResultDownloadType:
+      in: query
+      name: publicAllocationResultDownloadType
+      description: Public Allocation Download Types include binding constraints (BINDING_CONSTRAINT uses CRRBindingConstraint_v1.0.1.draft-07.schema.json) and public allocation results (PUBLIC_ALLOCATION_RESULT uses CRRPublicAllocationResult_v1.0.3.draft-07.schema.json) of a CRR allocation.
+      required: true
+      schema:
+        type: string
+        enum:
+          - BINDING_CONSTRAINT
+          - PUBLIC_ALLOCATION_RESULT
+    PublicAuctionResultDownloadType:
+      in: query
+      name: publicAuctionResultDownloadType
+      description: Public Auction Download Types include binding constraints (BINDING_CONSTRAINT uses CRRBindingConstraint_v1.0.1.draft-07.schema.json), public auction results (PUBLIC_AUCTION_RESULT uses CRRPublicAuctionResult_v1.1.1.draft-07.schema.json), and source/sink clearing prices (CLEARING_PRICE uses CRRSourceSinkClearingPRice_v1.0.1.draft-07.schema.json) of a CRR auction.
+      required: true
+      schema:
+        type: string
+        enum:
+          - BINDING_CONSTRAINT
+          - PUBLIC_AUCTION_RESULT
+          - CLEARING_PRICE
+    PrivateGeneralDownloadType:
+      in: query
+      name: privateGeneralDownloadType
+      description: Private General Download Type includes private existing CRRs of specified participant. Private Existing CRRs download types grouped by CRRs created from Allocation (PRIVATE_EXISTING_CRR_ALLOCATION, CRRs created from Auction (PRIVATE_EXISTING_CRR_AUCTION), CRRs created from Secondary Market (PRIVATE_EXISTING_CRR_SECONDARY_MARKET), CRRs created by the system including MT_TOR CRRs created from TOR-MT_TOR CRR Conversion (PRIVATE_EXISTING_CRR_SYSTEM), CRRs created from Load Migration process which are effective in the current year and three following years (PRIVATE_EXISTING_CRR_LM_CURRENT_PLUS_3), and CRRs created from Load Migration process which are effective after the next three years (PRIVATE_EXISTING_CRR_BEYOND_3). All private general download type use CRRExistingCRRs_v1.1.2.draft-07.schema.json.
+      required: true
+      schema:
+        type: string
+        enum:
+          - PRIVATE_EXISTING_CRR_ALLOCATION
+          - PRIVATE_EXISTING_CRR_AUCTION
+          - PRIVATE_EXISTING_CRR_SECONDARY_MARKET
+          - PRIVATE_EXISTING_CRR_SYSTEM
+          - PRIVATE_EXISTING_CRR_LM_CURRENT_PLUS_3
+          - PRIVATE_EXISTING_CRR_LM_BEYOND_3
+    PrivateAllocationDataDownloadType:
+      in: query
+      name: privateAllocationDataDownloadType
+      description: Private Allocation Download Types include signature pairs (SIGNATURE uses CRRSignatureResult_v1.1.0.draft-07.schema.json), sink upper bound (UPPER_BOUND uses CRRUpperBoundResult_v1.1.0.draft-07.schema.json), sink seasonal eligible quantities (SEQ uses CRRSEQResult_v1.1.0.draft-07.schema.json), and sink monthly eligible quantities (MEQ uses CRRMEQResult_v1.1.0.draft-07.schema.json) used in CRR nomination validations of a Nomination Cap calculation.
+      required: true
+      schema:
+        type: string
+        enum:
+          - SIGNATURE
+          - UPPER_BOUND
+          - SEQ
+          - MEQ
+    PrivateAllocationResultDownloadType:
+      in: query
+      name: privateAllocationResultDownloadType
+      description: Private Allocation Results download type. Allocation results of given participant name are included in the download file. PRIVATE_ALLOCATION_RESULT uses CRRPrivateAllocation_v1.draft-07.schema.
+      required: true
+      schema:
+        type: string
+        enum:
+          - PRIVATE_ALLOCATION_RESULT
+    PrivateAuctionResultDownloadType:
+      in: query
+      name: privateAuctionResultDownloadType
+      description: Private Auction Results download type. Auction results of given participant name are included in the download file. PRIVATE_AUCTION_RESULT uses CRRPrivateAuction_v1.draft-07.schema.
+      required: true
+      schema:
+        type: string
+        enum:
+          - PRIVATE_AUCTION_RESULT
+    CAISORequestUUID:
+      in: header
+      name: caiso-request-id
+      description: An HTTP header with a unique UUID (Universal Unique Identifier) for every request
+      schema:
+        type: string
+        format: uuid
+      required: true
+      example: c9b09ec1-3a3a-4e68-a4d7-89aece526b05
+  
+  schemas:
+    CRRServiceException:
+        description: |
+          <table>
+            <tr>
+              <th>Error Code</th>
+              <th>Description</th>
+              <th>Comment</th>
+            </tr>
+            <tr>
+              <td> GEN0003 </td>
+              <td> System is busy due to too many users, please try again later. </td>
+              <td> Generic System Validation </td>
+            </tr>            
+            <tr>
+              <td> SEC0001 </td>
+              <td> Access for Market Participant {0} is denied due to insufficient privilege. </td>
+              <td> Security Validation </td>
+            </tr>            
+            <tr>
+              <td>SEC0002</td>
+              <td>Access Denied. Please contact your Local Security Administrator.</td>
+              <td> Security Validation </td>
+            </tr>
+            <tr>
+              <td>MKT0001</td>
+              <td>Market name does not exist in the system.</td>
+              <td> Market Validation </td>
+            </tr>
+            <tr>
+              <td>MKT0007</td>
+              <td>The results of the specified market have not been posted.</td>
+              <td> Market Validation </td>
+            </tr>
+            <tr>
+              <td>DWL0001</td>
+              <td>Download type is invalid.</td>
+              <td> Download Validation </td>
+            </tr>
+            <tr>
+              <td>DWL0002</td>
+              <td>Download file format is invalid for the specified download type.</td>
+              <td> Download Validation </td>
+            </tr>
+            <tr>
+              <td>DWL0005</td>
+              <td>No data available for the given market, download type, and file format. </td>
+              <td> Download Validation </td>
+            </tr>
+            <tr>
+              <td>DWL0006</td>
+              <td>No data available for the given market, download type, and participant name. </td>
+              <td> Download Validation </td>
+            </tr>            
+            <tr>
+              <td> CAP0001 </td>
+              <td> Nomination Cap name does not exist for the download type. </td>
+              <td> Nomination Cap Download Validation </td>
+            </tr>
+            <tr>
+              <td> CAP0002 </td>
+              <td> Results of Nomination Cap calculation has not been posted. </td>
+              <td> Nomination Cap Download Validation </td>
+            </tr>  
+            <tr>
+             <td>SER0001</td>
+             <td>Please report the issue and provide the API access parameters to CAISO.</td>
+             <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0002</td>
+              <td>Invalid participant name {0}.</td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0003</td>
+              <td>Unable to create the download file. Please try again later.</td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0005</td>
+              <td>Invalid market type or term of market {0}.</td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0017</td>
+              <td>Invalid request "{0}".</td>
+              <td> Service and Business validation </td>
+            </tr>            
+            <tr>
+              <td> SER0028 </td>
+              <td> Internal Service Error </td>
+              <td> Service and Business validation for response in 500</td>
+            </tr>
+            <tr>
+              <td> SER0029</td>
+              <td> Cannot find a resource </td>
+              <td> Service and Business validation for response in 404</td>
+            </tr>              
+            <tr>
+              <td> SER0030 </td>
+              <td> {0}</td>
+              <td> Service and Business validation. Error from other generic data validations or error in the individual record in the body </td>
+            </tr>            
+          </table>
+        type: object
+        required:
+          - errorList
+          - creationTime
+  
+        properties:
+          errorList:
+            type: array
+            items:
+              $ref: '#/components/schemas/ErrorDetail'
+          creationTime:
+            type: string
+            description: date and time when the error is issued.
+            format: date-time
+            example: '2099-07-04T09:12:33Z'
+          serviceVersion:
+            type: string
+            description: version of service
+            maxLength: 10
+            example: 'V1.0'
+    ErrorDetail:
+      type: object
+      required:
+        - errorCode
+        - errorDescription
+        - severity
+
+      properties:  
+          errorDescription:
+            type: string
+            description: "JSON syntax error, error in the input parameter of the request (such as the object identifier does not exist), generic data validation (such as the submission window is not open), or error in the individual record"
+            maxLength: 1000
+            example: "Error description."
+          errorCode:
+            type: string
+            description: error code
+            maxLength: 15
+            example: 'XXX0000'
+          severity:
+            type: string
+            enum:
+              - FATAL
+              - ERROR

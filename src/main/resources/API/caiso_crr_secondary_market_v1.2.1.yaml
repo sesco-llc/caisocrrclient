@@ -1,0 +1,1330 @@
+openapi: 3.0.0
+servers:
+  - description: Mapstage Server Endpoint
+    url: https://mapstage-api.caiso.com/crr
+info:
+  title: CRR Secondary Market API
+  description: OpenAPI allows CRR Secondary Market request and response submission and status download.\n <table><tr><td>OpenAPI Spec Revision</td><td>Date</td><td>Change Log</td></tr><tr><td>1.0.0</td><td>2024-01-10</td><td>Initial Version</td></tr><tr><td>1.0.1</td><td>2024-06-12</td><td>Fixed typographical errors; Added an error code 'AUC0309'</td></tr><tr><td>1.0.2</td><td>2024-07-22</td><td>Added an error code 'SER0017'; Updated API summary a very high level preview of what the endpoint achieves and the description can explain it a bit further</td></tr><tr><td>1.0.3</td><td>2024-09-13</td><td>Added error codes 'SER0014', 'SER0018', 'SEC0001', 'SMT0146' and 'SMT0138'</td></tr><tr><td>1.1.0</td><td>2024-09-23</td><td>Updated 'OfferStatusType' and 'ResponseStatusType' to be required</td></tr><tr><td>1.1.1</td><td>2024-10-07</td><td>Added an error code 'SMT0107'.</td></tr><tr><td>1.1.2</td><td>2024-10-07</td><td>Update example of date-time to be in single quote.</td></tr></tr><tr><td>1.1.3</td><td>2024-10-17</td><td>Update all date-time field examples and remove 'milliseconds' part.</td></tr><tr><td>1.2.0</td><td>2024-11-05</td><td>Updated 'TargetRespondingMp' model 'Price' field to be required; Added 'SMT0082' error code.; Update CRRServiceException by having an array of 'ErrorDetail' which contain severity, errorCode, and errorDescription; remove error codes in description of 'CRRServiceException' that are not applicable to crr secondary market; Add comments to description of CRRServiceException; Replace error code SER0018 with GEN0003; Replace error code ATH0002 with SEC0001; Update error descriptions for error codes SER0001 and SMT0146; Add error code SER0030 for error from other generic data validations or error in the individual record in the body; Update responses to have HTTP status codes 403, 404, and 500 with content of object CRRServiceException; Error code SER0028 is used for response 404 and error code SER0029 for response 500;</td></tr><tr><td>1.2.1</td><td>2024-12-09</td><td>Disallow spaces in 'email' field in model 'ContactInfo'; Added error codes SEC0002, SMT0016, SMT0063. Correct description of error code SMT0082. Added error code SMT0145.</td></tr></table>
+  contact:
+    email: servicedesk@caiso.com
+  version: 1.2.1
+tags:
+  - name:  CRR Secondary Market Write
+    description: require read/write access
+  - name:  CRR Secondary Market Read
+    description: requires read only
+paths:
+  /secondarymarket/v1.0/mySmOffersByStatus:
+    get:
+      tags:
+      - CRR Secondary Market Read
+      summary: Gets all Offers statuses or for a specified status
+      description: ParticipantName is required. OfferStatusType is required. Secondary Market Offers posted by given ParticipantName in specified OfferStatusType are returned when OfferStatusType is in one of OfferStatusType enumerations.
+      operationId: getMySmOffersByStatus
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'      
+        - $ref: '#/components/parameters/OfferStatusType'
+      responses:
+        "200":
+          description: A list of secondary market offers that meet the specified parameters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SmOffer'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /secondarymarket/v1.0/mySmResponesByStatus:
+    get:
+      tags:
+      - CRR Secondary Market Read
+      summary: Gets all transactions statuses or for a specified status
+      description: ParticipantName is required. ResponseStatusType is required. Secondary Market transactions that have  ParticipantName as responding MP in specified ResponseStatusType are returned when ResponseStatusType is in one of ResponseStatusType enumerations.
+      operationId: getMySmResponsesByStatus
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'      
+        - $ref: '#/components/parameters/ResponseStatusType'
+      responses:
+        "200":
+          description: A list of secondary market responses that meet the specified parameters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SmResponse'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /secondarymarket/v1.0/publicSmBuyOfferCreation:
+    post:
+      tags:
+      - CRR Secondary Market Write
+      summary: Creates public buy offers for given participant name
+      description: create public secondary market Offers to buy CRRs for the given participant name
+      operationId: postPublicSmBuyOffers
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'
+      requestBody:
+        description: post new public secondary market buy offers
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/NewPublicSmBuyOffer'
+      responses:
+        "200":
+          description: list of secondary market public buy Offers and their statuses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SmOfferStatus'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /secondarymarket/v1.0/publicSmSellOfferCreation:
+    post:
+      tags:
+      - CRR Secondary Market Write
+      summary: Creates public sell offers for given participant name
+      description: create public secondary market Offers to sell CRRs for the given participant name
+      operationId: postPublicSmSellOffers
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'
+      requestBody:
+        description: post new public secondary market sell offers
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/NewPublicSmSellOffer'
+      responses:
+        "200":
+          description: list of secondary market public sell Offers and their statuses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SmOfferStatus'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /secondarymarket/v1.0/privateSmBuyOfferCreation:
+    post:
+      tags:
+      - CRR Secondary Market Write
+      summary: Creates private buy offers for given participant name
+      description: create private secondary market Offers to buy CRRs for the given participant name
+      operationId: postPrivateSmBuyOffers
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'
+      requestBody:
+        description: post new private secondary market buy offers
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/NewPrivateSmBuyOffer'
+      responses:
+        "200":
+          description: list of secondary market private buy Offer and their statuses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SmOfferStatus'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /secondarymarket/v1.0/privateSmSellOfferCreation:
+    post:
+      tags:
+      - CRR Secondary Market Write
+      summary: Creates private sell offers for given participant name
+      description: create private secondary market Offers to sell CRRs for the given participant name
+      operationId: postPrivateSmSellOffers
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'
+      requestBody:
+        description: post new private secondary market private sell offers and their statues
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/NewPrivateSmSellOffer'
+      responses:
+        "200":
+          description: list of secondary market Offer status
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SmOfferStatus'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /secondarymarket/v1.0/smPublicOfferToSpecifiedMp:
+    post:
+      tags:
+      - CRR Secondary Market Write
+      summary: Specifies a responding MP to a public Offer
+      description: specifies a responding MP to the public secondary market Offer initiated by the given participant name
+      operationId: targetSmPublicOfferToMp
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'
+      requestBody:
+        description: add responding MP name to public Offer(s)
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/TargetRespondingMp'
+      responses:
+        "200":
+          description: secondary market public offers and their statuses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SmOfferStatus'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /secondarymarket/v1.0/smResponseToBuyOffers:
+    post:
+      tags:
+      - CRR Secondary Market Write
+      summary: Responds to buy Offers for given participant name
+      description: specifies CRRs to respond to secondary market buy Offer(s) for the given responding participant name
+      operationId: postSmResponseToBuyOffers
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'
+      requestBody:
+        description: a list of responses to secondary market buy offers 
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SmResponseToBuyOffer'
+      responses:
+        "200":
+          description: secondary market responses and their statuses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SmResponseStatus'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /secondarymarket/v1.0/smResponseToSellOffers:
+    post:
+      tags:
+      - CRR Secondary Market Write
+      summary: Responds to sell Offers for given participant name
+      description: responds to secondary market CRR sell Offer(s) for the given responding participant name
+      operationId: postSmResponseToSellOffers
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'
+      requestBody:
+        description: a list of responses to secondary market sell offers
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SmResponseToSellOffer'
+      responses:
+        "200":
+          description: secondary market responses and their statuses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SmResponseStatus'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+components:
+  schemas:
+    CRRServiceException:
+        description: |
+          <table>
+            <tr>
+              <th>Error Code</th>
+              <th>Description</th>
+              <th>Comment</th>
+            </tr>
+            <tr>
+              <td> GEN0003 </td>
+              <td> System is busy due to too many users, please try again later. </td>
+              <td> Generic System Validation </td>
+            </tr>
+            <tr>
+             <td>SEC0001</td>
+             <td>Access for Market Participant {0} is denied due to insufficient privilege.</td>
+             <td> Service and Business validation </td>
+            </tr>
+            <tr>
+             <td>SEC0002</td>
+             <td>Access Denied. Please contact your Local Security Administrator.</td>
+             <td> Service and Business validation </td>
+            </tr>
+            <tr>
+             <td> SMT0016</td>
+             <td> The request ID "{0}" does not exist in the system. </td>
+             <td> Secondary Market Validation </td>
+            </tr>         
+            <tr>
+             <td> SMT0063</td>
+             <td> The request ID "{0}" in the offer does not belong to the asset owner "{1}". The asset owner name validation is case sensitive. </td>
+             <td> Secondary Market Validation </td>
+            </tr>             
+            <tr>
+              <td>SMT0082</td>
+              <td> Unable to retrieve a secondary market record by the given request ID and participant name. </td>
+              <td> Secondary Market Validation </td>
+            </tr>
+            <tr>
+              <td>SMT0138</td>
+              <td>CRR Type is invalid.</td>
+              <td> Secondary Market Validation </td>
+            </tr>
+            <tr>
+              <td>SMT0145</td>
+              <td>Offer and response of the request ID "{0}" do not have the same price.</td>
+              <td> Secondary Market Validation </td>
+            </tr>
+            <tr>
+              <td>SMT0146</td>
+              <td>Asset owner in the Offer is not the same as the request market participant name. The asset owner name validation is case sensitive.</td>
+              <td> Secondary Market Validation </td>
+            </tr>
+            <tr>
+              <td>SMT0107</td>
+              <td>The name of responding MP {0} does not exist in the system or the MP doesn't have CRRH role.  The market participant name validation is case sensitive.</td>
+              <td> Secondary Market Validation </td>
+            </tr>
+            <tr>
+              <td> SER0001 </td>
+              <td> Please report the issue and provide the API access parameters to CAISO. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0002 </td>
+              <td> Invalid participant name {0}. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0014</td>
+              <td>Invalid secondary market status type "{0}".</td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0017</td>
+              <td>Invalid request "{0}".</td>
+              <td> Service and Business validation </td>
+            </tr>            
+            <tr>
+              <td> SER0028 </td>
+              <td> Internal Service Error </td>
+              <td> Service and Business validation for response in 500</td>
+            </tr>
+            <tr>
+              <td> SER0029</td>
+              <td> Cannot find a resource </td>
+              <td> Service and Business validation for response in 404</td>
+            </tr>            
+            <tr>
+              <td> SER0030 </td>
+              <td> {0}</td>
+              <td> Service and Business validation. Error from other generic data validations or error in the individual record in the body </td>
+            </tr>            
+          </table>
+        type: object
+        required:
+          - errorList
+          - creationTime
+  
+        properties:
+          errorList:
+            type: array
+            items:
+              $ref: '#/components/schemas/ErrorDetail'
+          creationTime:
+            type: string
+            description: date and time when the error is issued.
+            format: date-time
+            example: '2099-07-04T09:12:33Z'
+          serviceVersion:
+            type: string
+            description: version of service
+            maxLength: 10
+            example: 'V1.0'
+    ErrorDetail:
+      type: object
+      required:
+        - errorCode
+        - errorDescription
+        - severity
+
+      properties:  
+          errorDescription:
+            type: string
+            description: "JSON syntax error, error in the input parameter of the request (such as the object identifier does not exist), generic data validation (such as the submission window is not open), or error in the individual record"
+            maxLength: 1000
+            example: "Error description."
+          errorCode:
+            type: string
+            description: error code
+            maxLength: 15
+            example: 'XXX0000'
+          severity:
+            type: string
+            enum:
+              - FATAL
+              - ERROR                    
+    OfferType:
+      description: Type of Secondary Market offer that initiating participant creates. BUY is specified for an offer to buy a CRR. SELL is specified for an offer to sell an existing CRR.
+      type: string
+      enum:
+      - BUY
+      - SELL
+    OfferStatus:
+      description: Status of secondary market offer
+      type: string
+      enum:
+      - POSTED
+      - PENDING_MP_RESPONSE
+      - APPROVED
+      - DISAPPROVED
+      - PENDING_CREDIT_CHECK
+      - ERROR
+    ResponseStatus:
+      description: Status of secondary market response
+      type: string
+      enum:
+      - PENDING_MP_RESPONSE
+      - APPROVED
+      - DISAPPROVED
+      - PENDING_CREDIT_CHECK
+      - ERROR
+    PostType:
+      description: PUBLIC post type is for secondary market offer posted to public without a responding MP. PRIVATE post type is for secondary market offer created when responding MP is specified.
+      type: string
+      enum:
+      - PUBLIC
+      - PRIVATE
+    TimeOfUse:
+      description: ON for on-peak time-of-use of CRR. OFF for off-peak time-of-use of CRR.
+      type: string
+      enum:
+      - ON
+      - OFF
+    HedgeType:
+      type: string
+      enum:
+        - OBL
+        - OPT
+    CrrType:
+      type: string
+      enum:
+        - LSE
+        - AUC
+        - OBAALSE
+        - MT
+        - LSE_LMT
+        - LMT_CNT
+        - LSE_THCNT
+        - MT_TOR
+    Megawatt:
+      type: number
+      description: quantity unit of CRR
+      pattern: '[\-+]?[\d]+\.?\d?\d?\d?'
+      format: double
+      minimum: 0.001
+      multipleOf: 0.001
+      example: 0.1    
+    Price:
+      description: Price in USD per Megawatt specified in a buy or sell offer of a CRR. It must be up to 2 decimal places. It can be zero, positive, or negative.
+      pattern: '[\-+]?[\d]+\.?\d?\d?'
+      type: number
+      format: double
+      multipleOf: 0.01
+      example: 1
+    ContactInfo:
+      description: Information for responding MP to contact the entity who initiates the secondary market offer.
+      required:
+      - email
+      - name
+      - phone
+      type: object
+      properties:
+        name:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of contact person
+          maxLength: 256
+          example: "ABC"
+        phone:
+          type: string
+          pattern: '^([0-9\. _-]*)$'
+          description: phone number of contact person
+          maxLength: 256
+          example: "111-222-3333"
+        email:
+          type: string
+          description: e-mail address of contact person
+          pattern: '^([a-zA-Z0-9\@\._-]*)$'
+          maxLength: 256
+          example: "a@a.com"
+        address:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: address of contact person
+          maxLength: 256
+          example: "11 A St."
+    NewPrivateSmBuyOffer:
+      required:
+      - assetOwner
+      - startDate      
+      - endDate
+      - source      
+      - sink
+      - tou
+      - hedgeType
+      - crrType
+      - mw
+      - price
+      - targetMpName
+      type: object
+      properties:
+        assetOwner:
+          description: name of initiating asset owner
+          maxLength: 64
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: ABCD
+        source:
+          description: name of CRR source
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: sourceA
+          maxLength: 150
+        sink:
+          description: name of CRR sink
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: sinkB
+          maxLength: 150
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'
+        crrType:
+          $ref: '#/components/schemas/CrrType'          
+        startDate:
+          description: effective start date
+          type: string
+          format: date-time
+          example: '2011-07-04T07:00:00Z'
+        endDate:
+          description: effective end date
+          type: string
+          format: date-time
+          example: '2011-07-05T07:00:00Z'
+        mw:
+          $ref: '#/components/schemas/Megawatt'
+        price:
+          $ref: '#/components/schemas/Price'
+        targetMpName:
+          description: name of participant who will respond to the buy or sell offer.
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 64
+          example: XYZ
+        contactInfo:
+          $ref: '#/components/schemas/ContactInfo'
+    NewPrivateSmSellOffer:
+      required:
+      - assetOwner
+      - crrId
+      - startDate      
+      - endDate
+      - source      
+      - sink
+      - tou
+      - hedgeType
+      - crrType
+      - mw
+      - price
+      - targetMpName
+      type: object
+      properties:
+        assetOwner:
+          description: name of initiating asset owner
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 64
+          example: ABCD
+        crrId:
+          description: ID of existing CRR for sale
+          type: integer
+          format: int64
+          example: 1234
+        source:
+          description: name of CRR source
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: sourceA
+          maxLength: 150
+        sink:
+          description: name of CRR sink
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          type: string
+          example: sinkB
+          maxLength: 150
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'
+        crrType:
+          $ref: '#/components/schemas/CrrType'               
+        startDate:
+          description: effective start date
+          type: string
+          format: date-time
+          example: '2011-07-04T07:00:00Z'
+        endDate:
+          description: effective end date
+          type: string
+          format: date-time
+          example: '2011-07-05T07:00:00Z'
+        mw:
+          $ref: '#/components/schemas/Megawatt'
+        price:
+          $ref: '#/components/schemas/Price'
+        targetMpName:
+          description: name of participant who responds to the buy or sell offer.
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+        contactInfo:
+          $ref: '#/components/schemas/ContactInfo'
+    NewPublicSmBuyOffer:
+      required:
+      - assetOwner
+      - startDate      
+      - endDate
+      - source      
+      - sink
+      - tou
+      - hedgeType
+      - crrType
+      - mw
+      - price
+      - contactInfo
+      type: object
+      properties:
+        assetOwner:
+          description: name of initiating asset owner
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: ABCD  
+        source:
+          description: name of CRR source
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: sourceA
+          maxLength: 150
+        sink:
+          description: name of CRR sink
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: sinkB
+          maxLength: 150
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'
+        crrType:
+          $ref: '#/components/schemas/CrrType'              
+        startDate:
+          description: effective start date
+          type: string
+          format: date-time
+          example: '2011-07-04T07:00:00Z'
+        endDate:
+          description: effective end date
+          type: string
+          format: date-time
+          example: '2011-07-05T07:00:00Z'
+        mw:
+          $ref: '#/components/schemas/Megawatt'
+        price:
+          $ref: '#/components/schemas/Price'          
+        contactInfo:
+          $ref: '#/components/schemas/ContactInfo'
+    NewPublicSmSellOffer:
+      required:
+      - assetOwner
+      - crrId
+      - startDate      
+      - endDate
+      - source      
+      - sink
+      - tou
+      - hedgeType
+      - crrType
+      - mw
+      - price
+      - contactInfo      
+      type: object
+      properties:
+        assetOwner:
+          description: name of initiating asset owner
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 64
+          example: ABCD  
+        crrId:
+          description: ID of existing CRR for sale
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999          
+          example: 1234
+        source:
+          description: name of CRR source
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: sourceA
+          maxLength: 150
+        sink:
+          description: name of CRR sink
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: sinkB
+          maxLength: 150
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'
+        crrType:
+          $ref: '#/components/schemas/CrrType'              
+        startDate:
+          description: effective start date
+          type: string
+          format: date-time
+          example: '2011-07-04T07:00:00Z'
+        endDate:
+          description: effective end date
+          type: string
+          format: date-time
+          example: '2011-07-05T07:00:00Z'
+        mw:
+          $ref: '#/components/schemas/Megawatt'
+        price:
+          $ref: '#/components/schemas/Price'          
+        contactInfo:
+          $ref: '#/components/schemas/ContactInfo'
+    SmOffer:
+      required:
+      - assetOwner
+      - postType
+      - requestId
+      - offerType
+      - startDate      
+      - endDate
+      - source      
+      - sink
+      - tou
+      - hedgeType
+      - crrType
+      - mw
+      - price
+      type: object
+      properties:
+        assetOwner:
+          description: name of initiating asset owner
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 64
+          example: ABCD   
+        requestId:
+          description: unique identifier assigned to the secondary market offer by the system.
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 1111
+        offerType:
+          $ref: '#/components/schemas/OfferType'
+        postType:
+          $ref: '#/components/schemas/PostType'
+        crrId:
+          description: ID of existing CRR for sale
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 1234
+        source:
+          description: name of CRR source
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: sourceA
+          maxLength: 150
+        sink:
+          description: name of CRR sink
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: sinkB
+          maxLength: 150
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'
+        crrType:
+          $ref: '#/components/schemas/CrrType'           
+        startDate:
+          description: effective start date
+          type: string
+          format: date-time
+          example: '2011-07-04T07:00:00Z'
+        endDate:
+          description: effective end date
+          type: string
+          format: date-time
+          example: '2011-07-05T07:00:00Z'
+        mw:
+          $ref: '#/components/schemas/Megawatt'
+        price:
+          $ref: '#/components/schemas/Price'
+        targetMpName:
+          description: name of participant who responds to the buy or sell offer.
+          maxLength: 64
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+        contactInfo:
+          $ref: '#/components/schemas/ContactInfo'
+    SmResponse:
+      required:
+      - initiatingAO
+      - initiatingOfferType
+      - requestId
+      - startDate      
+      - endDate
+      - source      
+      - sink
+      - tou
+      - hedgeType
+      - crrType
+      - mw
+      - price
+      type: object
+      properties:
+        responseId:
+          description: unique identifier assigned to the secondary market response by the system.
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 1112
+        requestId:
+          description: unique identifier assigned to the secondary market offer by the system.
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 1111
+        initiatingOfferType:
+          $ref: '#/components/schemas/OfferType'
+        initiatingAO:
+          description: name of participant who initiates the buy offer or sell offer
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 64
+          example: ABCD
+        crrId:
+          description: ID of existing CRR for sale
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 1234
+        source:
+          description: name of CRR source
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: sourceA
+          maxLength: 150
+        sink:
+          description: name of CRR sink
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: sinkB
+          maxLength: 150
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'
+        crrType:
+          $ref: '#/components/schemas/CrrType'           
+        startDate:
+          description: effective start date
+          type: string
+          format: date-time
+          example: '2011-07-04T07:00:00Z'
+        endDate:
+          description: effective end date
+          type: string
+          format: date-time
+          example: '2011-07-05T07:00:00Z'
+        mw:
+          $ref: '#/components/schemas/Megawatt'
+        price:
+          $ref: '#/components/schemas/Price'          
+        respondingAssetOwner:
+          description: name of asset owner who acquire the new CRR created from the secondary market transaction
+          maxLength: 64
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+    SmResponseToBuyOffer:
+      required:
+      - crrId
+      - requestId
+      type: object
+      properties:
+        requestId:
+          description: unique identifier assigned to the secondary market offer by the system.
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 1111
+        crrId:
+          description: ID of existing CRR for sale
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 1234
+    SmResponseToSellOffer:
+      required:
+      - requestId
+      type: object
+      properties:
+        requestId:
+          description: unique identifier assigned to the secondary market offer by the system.
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 1111
+    SmOfferStatus:
+      required:
+      - assetOwner
+      - postType
+      - offerStatus
+      - offerType
+      - startDate      
+      - endDate
+      - source      
+      - sink
+      - tou
+      - hedgeType
+      - crrType
+      - mw
+      type: object
+      properties:
+        assetOwner:
+          description: name of initiating asset owner
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          type: string
+          maxLength: 6
+          example: ABCD
+        requestId:
+          description: unique identifier assigned to the secondary market offer by the system.
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 1111
+        offerType:
+          $ref: '#/components/schemas/OfferType'
+        postType:
+          $ref: '#/components/schemas/PostType'
+        crrId:
+          description: ID of existing CRR for sale
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 1234
+        source:
+          description: name of CRR source
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: sourceA
+          maxLength: 150
+        sink:
+          description: name of CRR sink
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: sinkB
+          maxLength: 150
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'
+        crrType:
+          $ref: '#/components/schemas/CrrType'           
+        startDate:
+          description: effective start date
+          type: string
+          format: date-time
+          example: '2011-07-04T07:00:00Z'
+        endDate:
+          description: effective end date
+          type: string
+          format: date-time
+          example: '2011-07-05T07:00:00Z'
+        mw:
+          $ref: '#/components/schemas/Megawatt'
+        offerStatus:
+          $ref: '#/components/schemas/OfferStatus'
+        message:
+          description: message describes the error status of the secondary market offer
+          type: string
+          maxLength: 1024
+    TargetRespondingMp:
+      required:
+      - requestId
+      - respondingMpName
+      - price
+      type: object
+      properties:
+        requestId:
+          description: unique identifier assigned to the secondary market offer by the system.
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 1111
+        respondingMpName:
+          description: name of participant who responds to the secondary market offer
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 64
+        price:
+          $ref: '#/components/schemas/Price'
+    SmResponseStatus:
+      required:
+      - requestId
+      - responseStatus
+      type: object
+      properties:
+        requestId:
+          description: unique identifier assigned to the secondary market offer by the system.
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 1111
+        responseId:
+          description: unique identifier assigned to the secondary market response by the system.
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 1111
+        responseStatus:
+          $ref: '#/components/schemas/ResponseStatus'
+        message:
+          description: message to describe the error status of the response to the secondary market offer
+          type: string
+          maxLength: 1024
+
+  parameters:
+    ParticipantName:
+      in: query
+      name: participantName
+      description: Market Participant Name
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 64
+      example: CISO
+    OfferStatusType:
+      name: OfferStatusType
+      in: query
+      description: status of the secondary market Offer
+      required: true
+      style: form
+      explode: true
+      schema:
+        type: string
+        enum:
+        - POSTED
+        - PENDING_MP_RESPONSE
+        - APPROVED
+        - DISAPPROVED
+        - PENDING_CREDIT_CHECK
+        - ERROR
+    ResponseStatusType:
+      name: responseStatusType
+      in: query
+      description: status of the response to the secondary market response
+      required: true
+      style: form
+      explode: true
+      schema:
+        type: string
+        enum:
+        - PENDING_MP_RESPONSE
+        - APPROVED
+        - DISAPPROVED
+        - PENDING_CREDIT_CHECK
+        - ERROR
+    CAISORequestUUID:
+      in: header
+      name: caiso-request-id
+      description: An HTTP header with a unique UUID (Universal Unique Identifier) for every request
+      schema:
+        type: string
+        format: uuid
+      required: true
+      example: c9b09ec1-3a3a-4e68-a4d7-89aece526b05

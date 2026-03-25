@@ -1,0 +1,906 @@
+openapi: 3.0.0
+servers:
+  - description: Mapstage Server Endpoint
+    url: https://mapstage-api.caiso.com/crr
+info:
+  version: 1.2.1
+  title: TOR CRR Conversion API
+  description: OpenAPI allows TOR CRR Conversion Request and MT-TOR CRR Approval submission and TOR Conversion window status download./n <table><tr><td>OpenAPI Spec Revision</td><td>Date</td><td>Change Log</td></tr><tr><td>1.0.0</td><td>2024-01-10</td><td>Initial Version</td></tr><tr><td>1.0.1</td><td>2024-06-12</td><td>Fixed typographical errors</td></tr><tr><td>1.0.2</td><td>2024-07-22</td><td>Added an error code 'SER0017'; Updated API summary a very high level preview of what the endpoint achieves and the description can explain it a bit further</td></tr><tr><td>1.0.3</td><td>2024-08-12</td><td>Updated API descriptions for 'activeTorConversionWindows' and 'postedConversionWindows'</td></tr><tr><td>1.1.0</td><td>2024-09-19</td><td>Added an missing attribute 'conversionApprovalId' to model 'ConversionApprovalRecord'</td></tr><tr><td>1.1.1</td><td>2024-10-17</td><td>Update all date-time field examples and remove 'milliseconds' part; Added an error code 'TOR0016'.</td></tr><tr><td>1.2.0</td><td>2024-11-05</td><td>Removed all 'maxLength' specification from Enum and date-time schemas; Fixed 'dateTime' typo to 'date-time'.; Update CRRServiceException by having an array of 'ErrorDetail' which contain severity, errorCode, and errorDescription; Add comments to description of CRRServiceException; Remove error codes that are not used; Add error code SER0030 for error from other generic data validations or error in the individual record in the body; Update error descriptions for error codes SER0001 and SMT0146; Add error code SER0030 for error from other generic data validations or error in the individual record in the body; Update responses to have HTTP status codes 403, 404, and 500 with content of object CRRServiceException; Error code SER0028 is used for response 404 and error code SER0029 for response 500;</td></tr><tr><td>1.2.1</td><td>2024-12-09</td><td>Remove Start Date and End Date from ConversionApprovalRecord to be consistent with MUI TOR Conversion Approval Editor; Add error code SEC0002 for invalid participant name; Modify description of error code TOR0016</td></tr></table>
+  contact:
+    email: servicedesk@caiso.com
+tags:
+  - name: TOR CRR Conversion Write
+    description: require read/write access
+  - name: TOR CRR Conversion Read
+    description: requires read only  
+paths:
+  /torconversion/v1.0/activeTorConversionWindows:
+    get:
+      tags:
+        - TOR CRR Conversion Read
+      summary: Gets a list of active TOR conversion windows
+      operationId: getNewConversionWindowForRequest
+      description: |
+        By passing in the TOR or CRR Holder participant name, a list of TOR conversion windows that are not yet posted is returned.
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'
+
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TorConversionWindow'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'            
+  /torconversion/v1.0/postedConversionWindows:              
+    get:
+      tags:
+        - TOR CRR Conversion Read
+      summary: gets a list of posted TOR conversion windows
+      operationId: getNewConversionWindowForApproval
+      description: |
+        By passing in the TOR or CRR Holder participant name, a list of new TOR conversion windows that have already been posted is returned.
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'
+
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TorConversionWindow'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'                
+  /torconversion/v1.0/torConversionWindowStatus:
+    get:
+      tags:
+        - TOR CRR Conversion Read
+      summary: Gets details and status of a TOR Conversion Window
+      operationId: getTorConversionWindowStatus
+      description: gets details and status of TOR Conversion Window
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/TorConversionWindowName'    
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: status of TOR Conversion Window
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TorConversionWindow'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'            
+  /torconversion/v1.0/torConversionCreation:
+    post:
+      tags:
+        - TOR CRR Conversion Write
+      summary: Creates a request to convert TOR CRRs
+      operationId: postTorConversionRequest
+      description: creates a request to convert TOR CRRs for the specified source, sink, MW, start date, end date, and transferee asset owner
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+      responses:
+        '200':
+          description: TOR Conversion Request Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversionRequestUploadResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'   
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewTorConversionRequest'
+        description: TOR CRR Conversion Request
+  /torconversion/v1.0/torConversionRequestList:
+    get:
+      tags:
+        - TOR CRR Conversion Read
+      summary: Gets a list of saved TOR conversion requests
+      operationId: getTorConversionRequestList
+      description: |
+        By passing in the appropriate TOR Conversion Window Name and TOR Holder, a list of existing TOR conversion requests is returned.
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/TorConversionWindowName'
+        - $ref: '#/components/parameters/ParticipantName'
+
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConversionRequestWithStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'  
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /torconversion/v1.0/mtTorCRRApprovalList:
+    get:
+      tags:
+        - TOR CRR Conversion Read
+      summary: Gets a list of Mt TOR conversion requests
+      operationId: getMtTorCRRList
+      description: |
+        By passing in the appropriate TOR Conversion Window Name and CRR Holder, a list of MT_TOR CRRs and their status is returned
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/TorConversionWindowName'
+        - $ref: '#/components/parameters/ParticipantName'
+
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConversionApprovalRecord'   
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'   
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /torconversion/v1.0/torConversionPaths:
+    get:
+      tags:
+        - TOR CRR Conversion Read
+      summary: Gets a list of sink and source paths from a TOR Conversion Window
+      operationId: getTorConversionWindowPaths
+      description: |
+        By passing in the appropriate TOR Conversion Window Name and Market Participant Name, a list of sink and source paths is returned.
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/TorConversionWindowName'
+        - $ref: '#/components/parameters/ParticipantName'
+
+      responses:
+        '200':
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TorConversionPath'   
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /torconversion/v1.0/torConversionApproval:              
+    post:
+      tags:
+        - TOR CRR Conversion Write
+      summary: Submits approval/disapproval of TOR Conversion
+      operationId: postTorConversionApproval
+      description: Transferee asset owner of MT_TOR CRRs approve or disapproval the conversion
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+      responses:
+        '200':
+          description: MT_TOR CRR Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversionApprovalUploadResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'   
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MtTorCRRApproval'
+        description: TOR CRR Conversion Approval records for the specified TOR Conversion Window and Transferee Asset Owner       
+components:
+  parameters:
+    TorConversionWindowName:
+      in: query
+      name: torConversionWindow
+      description: TOR Conversion Window name
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 100
+    ParticipantName:
+      in: query
+      name: participantName
+      description: Market Participant Name
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 64
+      example: CISO        
+    CAISORequestUUID:
+      in: header
+      name: caiso-request-id
+      description: An HTTP header with a unique UUID (Universal Unique Identifier) for every request
+      schema:
+        type: string
+        format: uuid
+      required: true
+      example: c9b09ec1-3a3a-4e68-a4d7-89aece526b05
+  
+  schemas:
+    CRRServiceException:
+        description: |
+          <table>
+            <tr>
+              <th>Error Code</th>
+              <th>Description</th>
+              <th>Comment</th>
+            </tr>
+            <tr>
+              <td> SEC0001 </td>
+              <td> Access for Market Participant {0} is denied due to insufficient privilege. </td>
+              <td> Security Validation </td>
+            </tr>    
+            <tr>
+              <td> SEC0002 </td>
+              <td> Access Denied. Please contact your Local Security Administrator. </td>
+              <td> Security Validation</td>
+            </tr>             
+            <tr>
+              <td>TOR0016</td>
+              <td>TOR conversion name {0} does not exist in the system.</td>
+              <td> TOR Conversion Validation </td>
+            </tr>
+            <tr>
+              <td>TOR0023</td>
+              <td>TOR conversion submission window {0} is closed.</td>
+              <td> TOR Conversion Validation </td>
+            </tr>  
+            <tr>
+              <td>TOR0024</td>
+              <td>TOR conversion approval window {0} is closed.</td>
+              <td> TOR Conversion Validation </td>
+            </tr>  
+            <tr>
+             <td>SER0001</td>
+             <td>Please report the issue and provide the API access parameters to CAISO.</td>
+             <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0002</td>
+              <td>Invalid participant name {0}.</td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0017</td>
+              <td>Invalid request "{0}".</td>
+              <td> Service and Business validation </td>
+            </tr>            
+            <tr>
+              <td> SER0028 </td>
+              <td> Internal Service Error </td>
+              <td> Service and Business validation for response in 500</td>
+            </tr>
+            <tr>
+              <td> SER0029</td>
+              <td> Cannot find a resource </td>
+              <td> Service and Business validation for response in 404</td>
+            </tr>               
+            <tr>
+              <td> SER0030 </td>
+              <td> {0}</td>
+              <td> Service and Business validation. Error from other generic data validations or error in the individual record in the body </td>
+            </tr>              
+          </table>
+        type: object
+        required:
+          - errorList
+          - creationTime
+  
+        properties:
+          errorList:
+            type: array
+            items:
+              $ref: '#/components/schemas/ErrorDetail'
+          creationTime:
+            type: string
+            description: date and time when the error is issued.
+            format: date-time
+            example: '2099-07-04T09:12:33Z'
+          serviceVersion:
+            type: string
+            description: version of service
+            maxLength: 10
+            example: 'V1.0'
+    ErrorDetail:
+      type: object
+      required:
+        - errorCode
+        - errorDescription
+        - severity
+
+      properties:  
+          errorDescription:
+            type: string
+            description: "JSON syntax error, error in the input parameter of the request (such as the object identifier does not exist), generic data validation (such as the submission window is not open), or error in the individual record"
+            maxLength: 1000
+            example: "Error description."
+          errorCode:
+            type: string
+            description: error code
+            maxLength: 15
+            example: 'XXX0000'
+          severity:
+            type: string
+            enum:
+              - FATAL
+              - ERROR   
+    Megawatt:
+      pattern: '[\-+]?[\d]+\.?\d?\d?\d?'
+      type: number
+      format: double
+      multipleOf: 0.001
+      minimum: 0.001
+      example: 0.999  
+    Period:
+      type: object
+      required:
+        - name
+        - startDate
+        - endDate
+      properties:
+        name:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 20
+          example: '2024_S01'
+        startDate:
+          type: string
+          format: date-time
+          example: '2024-01-01T08:00:00Z'        
+        endDate:
+          type: string
+          format: date-time
+          example: '2024-03-31T06:59:59Z'    
+    TimeOfUse:
+      type: string
+      enum:
+        - ON
+        - OFF      
+    HedgeType:
+      type: string
+      enum:
+        - OBL
+        - OPT        
+    Modeled: 
+      type: string
+      description: TOR conversion modeled flag. Y = Modeled CRR; N = Non-modeled CRR;
+      enum:
+        - Y
+        - N        
+    SubmissionWindow:
+      type: object
+      required:
+        - openDate
+        - closeDate
+      properties:
+        openDate:
+          type: string
+          format: date-time
+          example: '2023-12-12T07:00:00Z'        
+        closeDate:
+          type: string
+          format: date-time
+          example: '2023-12-141T02:00:00Z'        
+    ConversionWindowStatus:
+      type: string
+      enum:
+        - NEW
+        - OPEN_FOR_CONVERSION
+        - CLOSED_FOR_CONVERSION
+        - OPEN_FOR_APPROVAL
+        - CLOSED_FOR_APPROVAL
+        - POSTED
+    TorRequestStatus:
+      type: string
+      enum:
+        - PENDING_APPROVAL
+        - ERROR
+        - APPROVED
+        - DISAPPROVED  
+    ConversionApprovalStatus:
+      type: string
+      enum:
+        - PENDING_APPROVAL
+        - APPROVED
+        - DISAPPROVED          
+    ConversionRequestUploadResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - errorMessages
+      properties:
+        status:
+          $ref: '#/components/schemas/TORConversionUploadStatus'
+        timestamp:
+          type: string
+          description: date and time when the conversion requests are submitted by market participant
+          format: date-time
+          example: '2023-01-01T09:12:33Z'
+        errorMessages:
+          type: string
+          maxLength: 2147483647
+          description: error message or error report indicating the reason that the TOR Conversion request creation fails.
+          example: '[ "Invalid Sink value in record [Source1,Sink1,10,09/30/2023,09/30/2023,AO1,Y] ",
+                      "Invalid Transferee value in record [Source1,Sink1,10,09/30/2023,09/30/2023,AO2,Y]"]'
+    ConversionApprovalUploadResponse:
+      type: object
+      required:
+        - status
+        - timestamp
+        - errorMessages
+      properties:
+        status:
+          $ref: '#/components/schemas/TORConversionUploadStatus'
+        timestamp:
+          type: string
+          description: date and time when the conversion approvals are submitted by market participant
+          format: date-time
+          example: '2023-01-01T09:12:33Z'
+        errorMessages:
+          type: string
+          maxLength: 2147483647
+          description: error message or error report indicating the reason that the TOR Conversion approval submission fails.
+          example: '[ "No TOR conversion results found for TOR conversion window = MT_TOR_AN_2024_S02"]'
+    TORConversionUploadStatus:
+      type: string
+      description: VALID means all conversion requests/approvals are valid. ERROR means conversion requests/approvals fail data validations.
+      enum:
+        - VALID
+        - ERROR
+    ConversionRequestWithStatus:
+      type: object
+      required:
+        - source
+        - sink
+        - startDate
+        - endDate
+        - mw
+        - transfereeAO
+        - requestStatus
+        - modeled
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 141      
+        source:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of source
+          maxLength: 150
+          example: 'source1'
+        sink:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of sink
+          maxLength: 150
+          example: 'sink1'
+        startDate:
+          type: string
+          format: date-time
+          description: effective start date of CRR being converted
+          example: '2024-01-01T08:00:00Z'
+        endDate:
+          type: string
+          format: date-time
+          description: effective end date of CRR being converted
+          example: '2024-03-31T06:59:59Z'
+        mw:
+          $ref: '#/components/schemas/Megawatt'  
+        transfereeAO:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of asset owner that the TOR CRR is being transferred to
+          maxLength: 64
+          example: AO1          
+        requestStatus:
+          $ref: '#/components/schemas/TorRequestStatus'
+        message:
+          type: string
+          description: error message described reason that the request is in error status
+          maxLength: 1040
+        modeled:
+          $ref: '#/components/schemas/Modeled'   
+    ConversionRequest:
+      type: object
+      required:
+        - source
+        - sink
+        - startDate
+        - endDate
+        - mw
+        - transfereeAO
+        - modeled
+      properties:
+        source:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of source
+          maxLength: 150
+          example: 'source1'
+        sink:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of sink
+          maxLength: 150
+          example: 'sink1'
+        startDate:
+          type: string
+          format: date-time
+          description: effective start date of CRR being converted
+          example: '2024-01-01T08:00:00Z'
+        endDate:
+          type: string
+          format: date-time
+          description: effective end date of CRR being converted
+          example: '2024-03-31T06:59:59Z'
+        mw:
+          $ref: '#/components/schemas/Megawatt'  
+        transfereeAO:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of asset owner that the TOR CRR is being transferred to
+          maxLength: 64
+          example: AO1 
+        modeled:
+          $ref: '#/components/schemas/Modeled'      
+    ConversionApprovalRecord:
+      type: object
+      required:
+        - conversionApprovalId
+        - source
+        - sink
+        - tou
+        - hedgeType
+        - mw
+        - approvalStatus
+      properties:
+        conversionApprovalId:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 736
+        mtTorCrrId: 
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 141
+        source:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of source
+          maxLength: 150
+          example: 'source1'
+        sink:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of sink
+          maxLength: 150
+          example: 'sink1'
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'            
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'            
+        mw:
+          $ref: '#/components/schemas/Megawatt'  
+        approvalStatus:
+          $ref: '#/components/schemas/ConversionApprovalStatus'         
+    NewTorConversionRequest:
+      type: object
+      required:
+        - torConversionWindow
+        - torHolder
+        - conversionRequests
+      properties:
+        torConversionWindow:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: TOR CRR Conversion Window Name
+          maxLength: 100
+          example: TOR_CONVERSION_2024_S01
+        torHolder:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 64
+          description: name of TOR CRR Holder
+          example : 'ABC1'
+        conversionRequests:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversionRequest'  
+    MtTorCRRApproval:
+      type: object
+      required:
+        - torConversionWindow
+        - assetOwner
+        - conversionApprovalRecords
+      properties:
+        torConversionWindow:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: TOR CRR Conversion Window Name
+          maxLength: 100
+          example: TOR_CONVERSION_2024_S01
+        assetOwner:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 64
+          description: name of CRR asset owner who TOR CRR is transferred to
+          example : 'ABC1'
+        conversionApprovalRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversionApprovalRecord'      
+    TorConversionWindow:
+      type: object
+      required:
+        - name
+        - period
+        - conversionSubmissionWindow
+        - conversionApprovalWindow
+        - status
+      properties:
+        name:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: TOR CRR Conversion Window Name
+          maxLength: 100
+          example: 'TOR_CONVERSION_2024_S01'
+        period:
+          $ref: '#/components/schemas/Period'  
+        conversionSubmissionWindow:
+          $ref: '#/components/schemas/SubmissionWindow'          
+        ConversionApprovalWindow:
+          $ref: '#/components/schemas/SubmissionWindow'          
+        status:
+          $ref: '#/components/schemas/ConversionWindowStatus'
+    TorConversionPath:
+      type: object
+      required:
+        - id
+        - source
+        - sink
+        - startDate
+        - endDate
+        - maxMw
+      properties:
+        id: 
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 141
+        source:
+          type: string
+          description: name of source
+          maxLength: 150
+          example: 'source1'
+        sink:
+          type: string
+          description: name of sink
+          maxLength: 150
+          example: 'sink1'
+        startDate:
+          type: string
+          format: date-time
+          description: effective start date of source-sink
+          example: '2024-01-01T08:00:00Z'
+        endDate:
+          type: string
+          format: date-time
+          description: effective end date of source-sink 
+          example: '2024-03-31T06:59:59Z'
+        maxMw:
+          $ref: '#/components/schemas/Megawatt'

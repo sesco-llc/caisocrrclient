@@ -1,0 +1,1361 @@
+openapi: 3.0.0
+servers:
+  - description: Mapstage Server Endpoint
+    url: https://mapstage-api.caiso.com/crr
+info:
+  description: OpenAPI allows UDC Data Submission and Load Migration Results download. <table><tr><td>OpenAPI Spec Revision</td><td>Date</td><td>Change Log</td></tr><tr><td>1.0.0</td><td>2024-01-10</td><td>Initial Version</td></tr><tr><td>1.1.0</td><td>2024-06-12</td><td>Fixed OperationId for API /loadMigrationCrrResults; Added an extra required field 'effectiveDate' to POST API /PostDASRsummaryset</td></tr><tr><td>1.1.1</td><td>2024-06-12</td><td>Fixed typographical errors</td></tr><tr><td>1.1.2</td><td>2024-07-22</td><td>Added an error code 'SER0017'; Updated API summary a very high level preview of what the endpoint achieves and the description can explain it a bit further</td></tr><tr><td>1.2.0</td><td>2024-08-29</td><td>Added a field 'tou' for Time of Use to /loadPercentage API response.</td></tr><tr><td>1.2.1</td><td>2024-08-29</td><td>Marked 'LMMarketStatus' model fields as required</td></tr><tr><td>1.2.2</td><td>2024-09-12</td><td>Changed 'lse' field maxLength to 9 and pattern to be numbers only.</td></tr><tr><td>1.2.3</td><td>2024-09-13</td><td>Changed maximum spec from  99999999999999999999 to doable size 9223372036854775807 that fit in the system.</td></tr><tr><td>1.3.0</td><td>2024-11-04</td><td>Update all date-time field examples and remove 'milliseconds' component; Update CRRServiceException by having an array of 'ErrorDetail' which contain severity, errorCode, and errorDescription; Add comments to description of CRRServiceException; Update responses to have HTTP status codes 403, 404, and 500 with content of object CRRServiceException; Error code SER0028 is used for response 404 and error code SER0029 for response 500; Remove errorMessage from UDCSubmissionStatus; Remove ERROR from enum of SubmissionStatus;</td></tr><tr><td>1.3.1</td><td>2024-11-21</td><td>Add error code LMV1003 for the error that the specified load migration market name does not exist in the system; Add error code SEC0002 for invalid participant name;</td></tr><tr><td>1.3.2</td><td>2024-12-17</td><td>Add error code LMV023</td></tr></table>
+  version: 1.3.2
+  title: CRR Load Migration API
+  contact:
+    email: servicedesk@caiso.com
+tags:
+  - name: CRR Load Migration Write
+    description: require read/write access
+  - name: CRR Load Migration Read
+    description: requires read only
+paths:
+  /loadmigration/v1.0/activeLoadMigrationMarketList:
+    get:
+      tags:
+        - CRR Load Migration Read
+      summary: Gets a list of active load migration markets
+      operationId: getActiveLoadMigrationMarketList
+      description: gets a list of load migration markets that are open now, closed or open in the future for authorized participant. Markets that have open date in the future will have status 'PREP'
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'      
+      responses:
+        '200':
+          description: an array of load migration market
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoadMigrationMarket'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+  /loadmigration/v1.0/postedLoadMigrationMarketList:
+    get:
+      tags:
+        - CRR Load Migration Read
+      summary: Gets a list of posted load migration markets
+      operationId: getPostedLoadMigrationMarketList
+      description: gets a list of posted load migration markets for authorized participant
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: an array of load migration market
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoadMigrationMarket'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'          
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+  /loadmigration/v1.0/loadMigrationMarketStatus:
+    get:
+      tags:
+        - CRR Load Migration Read
+      summary: Gets status of a load migration market
+      operationId: getLoadMigrationMarketStatus
+      description: gets status of load migration market for a given load migration market name for authorized participant
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/LoadMigrationMarketName'        
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: status of load migration market
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - marketStatus
+                properties:
+                  marketStatus:
+                    $ref: '#/components/schemas/LMMarketStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'  
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+  /loadmigration/v1.0/loadPercentage:
+    get:
+      tags:
+        - CRR Load Migration Read
+      summary: Gets load percentage data from given market name
+      operationId: getLoadPercentages
+      description: gets load percentage and transfer MW by pair of load gaining and lose losing LSEs for the given load migration market, and participant name
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/LoadMigrationMarketName'      
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: load percentage results for a given market name and participant name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoadPercentageResults'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+  /loadmigration/v1.0/loadMigrationCrrResults:
+    get:
+      tags:
+        - CRR Load Migration Read
+      summary: Gets load migration CRRs data from given market name
+      operationId: getLoadMigrationCRRs
+      description: gets load migration CRRs and incremental MW added to existing load migration CRRs created for the given load migration market, and participant name who has load transfer
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/LoadMigrationMarketName'      
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: load migration results for a given market name and participant name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoadMigrationResults'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'  
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+  /loadmigration/v1.0/nHourData:
+    get:
+      tags:
+        - CRR Load Migration Read
+      summary: Gets N-Hour data from given market name
+      operationId: getNHourData
+      description: gets UDC H-Hour Data for a given load migration market name and UDC user
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/LoadMigrationMarketName'
+        - $ref: '#/components/parameters/ParticipantName'  
+      responses:
+        '200':
+          description: N-Hour Data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NHourData'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+  /loadmigration/v1.0/existingNumberOfCustomers:
+    get:
+      tags:
+        - CRR Load Migration Read
+      summary: Gets number of customers data from given market name
+      operationId: getExistingNumberOfCustomers
+      description: gets UDC's number of customers posted to the load migration market for the specified UDC user
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/LoadMigrationMarketName'      
+        - $ref: '#/components/parameters/ParticipantName'  
+      responses:
+        '200':
+          description: Submission Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NumberOfCustomersSet'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'               
+  /loadmigration/v1.0/numberOfCustomers:
+    post:
+      tags:
+        - CRR Load Migration Write
+      summary: Uploads number of customers data
+      operationId: postNumberOfCustomers
+      description: uploads number of customers data to given market name and UDC name
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'      
+      responses:
+        '200':
+          description: Submission Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UDCSubmissionStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'  
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'                     
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostNumberOfCustomersSet'           
+  /loadmigration/v1.0/existingDasrSummary:
+    get:
+      tags:
+        - CRR Load Migration Read
+      summary: Gets DASR summary data from given market name
+      operationId: getExistingDasrSummary
+      description: gets UDC's DASR Summary posted to the load migration market for the specified UDC user
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/LoadMigrationMarketName'   
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: Submission Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DASRsummaryset'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+  /loadmigration/v1.0/dasrSummary:
+    post:
+      tags:
+        - CRR Load Migration Write
+      summary: Uploads DASR Summary data
+      operationId: postDasrSummary
+      description: uploads UDC's Direct Access Service Request Summary to given market name and UDC name
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'      
+      responses:
+        '200':
+          description: Submission Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UDCSubmissionStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'                 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostDASRsummaryset'         
+  /loadmigration/v1.0/existingCustomerRates:
+    get:
+      tags:
+        - CRR Load Migration Read
+      summary: Gets UDC customer rates data from given market name
+      operationId: getExistingCustomerRates
+      description: gets UDC's customer rates posted to the load migration market for the specified UDC user
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/LoadMigrationMarketName'         
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: Submission Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerRateSet'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+  /loadmigration/v1.0/customerRates:
+    post:
+      tags:
+        - CRR Load Migration Write
+      summary: Uploads UDC customer rates
+      operationId: postCustomerRates
+      description: uploads UDC's customer rates to given market name and UDC name
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'      
+      responses:
+        '200':
+          description: Submission Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UDCSubmissionStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'                  
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCustomerRateSet'                        
+components:
+  parameters:
+    LoadMigrationMarketName:
+      in: query 
+      name: loadMigrationMarketName
+      description: Name of load migration market
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 50
+        example: LOAD_MIGRATION_2022 
+    ParticipantName:
+      in: query
+      name: participantName
+      description: Market Participant Name
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 64
+      example: CISO           
+    CAISORequestUUID:
+      in: header
+      name: caiso-request-id
+      description: An HTTP header with a unique UUID (Universal Unique Identifier) for every request
+      schema:
+        type: string
+        format: uuid
+      required: true
+      example: c9b09ec1-3a3a-4e68-a4d7-89aece526b05
+  
+  schemas:
+    CRRServiceException:
+        description: |
+          <table>
+            <tr>
+              <th>Error Code</th>
+              <th>Description</th>
+              <th>Comment</th>
+            </tr>
+            <tr>
+              <td> LMV0101 </td>
+              <td> N-Hour data is not available in the specified Load Migration Market. </td>
+              <td> Load Migration Validation </td>
+            </tr>
+            <tr>
+              <td> LMV0102 </td>
+              <td> Submission window for load migration market {0} is not open. </td>
+              <td> Load Migration Validation </td>
+            </tr>
+            <tr>
+              <td> LMV0103 </td>
+              <td> Results of load migration market {0} have not been posted. </td>
+              <td> Load Migration Validation </td>
+            </tr>
+            <tr>
+              <td> LMV023 </td>
+              <td> Effective Date {0} does not match load migration market effective date {1}. </td>
+              <td> Load Migration Validation </td>
+            </tr>
+            <tr>
+              <td> LMV024 </td>
+              <td> Invalid UDC name: {0} </td>
+              <td> Load Migration Validation </td>
+            </tr>
+            <tr>
+              <td> LMV1002 </td>
+              <td> The load migration market has not been configured. </td>
+              <td> Load Migration Validation </td>
+            </tr>   
+            <tr>
+              <td> LMV1003 </td>
+              <td> The specified load migration market name does not exist in the system. </td>
+              <td> Load Migration Validation </td>
+            </tr>          
+            <tr>
+              <td> SEC0001 </td>
+              <td> Access for Market Participant {0} is denied due to insufficient privilege. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SEC0002 </td>
+              <td> Access Denied. Please contact your Local Security Administrator. </td>
+              <td> Security Validation</td>
+            </tr>            
+            <tr>
+              <td> SER0001 </td>
+              <td> Please report the issue and provide the API access parameters to CAISO. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0017 </td>
+              <td> Invalid request "{0}". </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0022 </td>
+              <td> Portfolio name can contain alphanumeric or alphanumeric with one or more space, underscore, hyphen and dot. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0028 </td>
+              <td> Internal Service Error </td>
+              <td> Service and Business validation for response in 500</td>
+            </tr>
+            <tr>
+              <td> SER0029</td>
+              <td> Cannot find a resource </td>
+              <td> Service and Business validation for response in 404</td>
+            </tr>             
+            <tr>
+              <td> SER0030 </td>
+              <td> {0}</td>
+              <td> Service and Business validation. Error from other generic data validations or error in the individual record in the body </td>
+            </tr>            
+          </table>
+        type: object
+        required:
+          - errorList
+          - creationTime
+  
+        properties:
+          errorList:
+            type: array
+            items:
+              $ref: '#/components/schemas/ErrorDetail'
+          creationTime:
+            type: string
+            description: date and time when the error is issued.
+            format: date-time
+            example: '2099-07-04T09:12:33Z'
+          serviceVersion:
+            type: string
+            description: version of service
+            maxLength: 10
+            example: 'V1.0'
+    ErrorDetail:
+      type: object
+      required:
+        - errorCode
+        - errorDescription
+        - severity
+
+      properties:  
+          errorDescription:
+            type: string
+            description: "JSON syntax error, error in the input parameter of the request (such as the object identifier does not exist), generic data validation (such as the submission window is not open), or error in the individual record"
+            maxLength: 1000
+            example: "Error description."
+          errorCode:
+            type: string
+            description: error code
+            maxLength: 15
+            example: 'XXX0000'
+          severity:
+            type: string
+            enum:
+              - FATAL
+              - ERROR   
+    LMMarketStatus:
+      type: string
+      description: PREP status is for a load migration market that has open date is in the future and it is not yet posted. OPEN status is for a load migration market which is open for UDCs submit their data. CLOSED status is for a load migration market which its UDC data submission period has closed and it is not yet posted. POSTED is for a load migration market that the load transfer and load migration CRRs results have been posted.
+      enum:
+        - PREP
+        - OPEN
+        - CLOSED
+        - POSTED  
+    SubmissionStatus:
+      type: string
+      description: VALID status is for a successful UDC data submission.
+      enum:
+        - VALID
+    UDCSubmissionStatus:
+      type: object
+      required:
+        - submissionStatus
+      properties:
+        submissionStatus:
+          $ref: '#/components/schemas/SubmissionStatus'
+    TimeOfUse:
+      type: string
+      description: Time-of-Use
+      enum:
+        - ON
+        - OFF  
+    Megawatt:
+      type: number
+      description: quantity unit of CRR
+      pattern: '[\-+]?[\d]+\.?\d?\d?\d?'
+      format: double
+      minimum: 0.001
+      multipleOf: 0.001
+      example: 0.1  
+    YesNo:
+      type: string
+      description: boolean for Yes or No
+      enum:
+        - Yes
+        - No
+    NHourData:
+      type: object
+      required:
+        - defaultLoadAggregationPoint
+        - seasonNumber
+        - tou
+        - effectiveDate
+        - hourEnding
+      properties:
+        defaultLoadAggregationPoint:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of default load aggregation point
+          maxLength: 150
+        seasonNumber:
+          $ref: '#/components/schemas/Season'
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        effectiveDate:
+          type: string
+          description: effective date
+          format: date-time
+          example: '2024-09-01T07:00:00Z'      
+        hourEnding:
+          type: integer
+          description: ending hour
+          minimum: 1
+          maximum: 25
+        lastModified:
+          type: string
+          description: date and time when N-Hour record is created by the system
+          format: date-time
+          example: '2021-09-01T07:00:00Z'          
+    SubmissionWindow:
+      type: object
+      required:
+        - openDate
+        - closeDate
+      properties:
+        openDate:
+          type: string
+          description: open date and time of UDC data submission period
+          format: date-time
+          example: '2021-09-01T07:00:00Z'        
+        closeDate:
+          type: string
+          description: close date and time of UDC data submission period
+          format: date-time
+          example: '2021-10-01T07:00:00Z'         
+    LoadMigrationMarket:
+      type: object
+      required:
+        - marketName
+        - effectiveDate
+        - nHourDataPosting
+        - submissionWindow
+        - marketStatus
+      properties:
+        marketName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of load migration market
+          maxLength: 50
+          example: 'LOAD_MIGRATION_2021_M09'
+        effectiveDate:
+          type: string
+          description: first day of the month that the load migration becomes effective
+          format: date-time
+          example: '2021-09-01T07:00:00Z'
+        nHourDataPosting:
+          $ref: '#/components/schemas/YesNo'
+        nHourDataPostDate:
+          type: string
+          description: date and time when N-Hour data will be available to UDCs
+          format: date-time
+          example: '2021-09-01T07:00:00Z'
+        submissionWindow:
+          $ref: '#/components/schemas/SubmissionWindow'   
+        marketStatus:
+          $ref: '#/components/schemas/LMMarketStatus'
+        
+    NumberOfCustomers:
+      type: object
+      required:
+        - lse
+        - class
+        - numberOfCustomers
+      properties:
+        lse:
+          type: string
+          pattern: '^([0-9]*)$'
+          description: Data Universal Numbering System ID (DUNS ID) of LSE
+          maxLength: 9
+          example: 123456789
+        class:
+          $ref: '#/components/schemas/CustomerClass'
+        numberOfCustomers:
+          type: integer
+          description: number of customers
+          minimum: 1
+          maximum: 9223372036854775807
+          example: 128
+        lastModified:
+          type: string
+          description: date and time when number of customers is submitted by UDC
+          format: date-time
+          example: '2021-09-01T07:00:00Z'
+    PostNumberOfCustomers:
+      type: object
+      required:
+        - lse
+        - class
+        - numberOfCustomers
+      properties:
+        lse:
+          type: string
+          pattern: '^([0-9]*)$'
+          description: Data Universal Numbering System ID (DUNS ID) of LSE
+          maxLength: 9
+          example: 123456789
+        class:
+          $ref: '#/components/schemas/CustomerClass'
+        numberOfCustomers:
+          type: integer
+          description: number of customers
+          minimum: 0
+          maximum: 9223372036854775807
+          example: 128
+    NumberOfCustomersSet:
+      type: object
+      required:
+        - loadMigrationMarket
+        - udcName
+        - numberOfCustomerRecords
+      properties:
+        loadMigrationMarket:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of load migration market
+          maxLength: 50
+        udcName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of UDC
+          maxLength: 64
+          example: 'UDC1'    
+        numberOfCustomerRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/NumberOfCustomers'
+    PostNumberOfCustomersSet:
+      type: object
+      required:
+        - loadMigrationMarket
+        - udcName
+        - numberOfCustomerRecords
+      properties:
+        loadMigrationMarket:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of load migration market
+          maxLength: 50
+        udcName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of UDC
+          maxLength: 64
+          example: 'UDC1'    
+        numberOfCustomerRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostNumberOfCustomers'
+    DASRsummary:
+      type: object
+      required:
+        - recordId
+        - class
+        - fromLse
+        - toLse
+        - numCustomerTransfer
+      properties:
+        recordId:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 50
+          description: unique alphanumeric field
+        class:
+          $ref: '#/components/schemas/CustomerClass'
+        fromLse:
+          type: string
+          pattern: '^([0-9]*)$'
+          maxLength: 9
+          description: Data Universal Numbering System ID (DUNS ID)  of the LSE customer transfer from, If the LSE is registered with CRR system
+        toLse:
+          type: string
+          pattern: '^([0-9]*)$'
+          maxLength: 9
+          description: Data Universal Numbering System ID (DUNS ID) of the LSE customer transfer to, If the LSE is registered with CRR system
+        numCustomerTransfer:
+          type: integer
+          minimum: 1
+          maximum: 9223372036854775807          
+          description: number of customer transfer
+        lastModified:
+          type: string
+          description: date and time when DASR is submitted by UDC
+          format: date-time
+          example: '2021-09-01T07:00:00Z'
+    PostDASRsummary:
+      type: object
+      required:
+        - recordId
+        - class
+        - fromLse
+        - toLse
+        - numCustomerTransfer
+      properties:
+        recordId:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          maxLength: 50
+          description: unique alphanumeric field
+        class:
+          $ref: '#/components/schemas/CustomerClass'
+        fromLse:
+          type: string
+          pattern: '^([0-9]*)$'
+          maxLength: 9
+          description: Data Universal Numbering System ID (DUNS ID)  of the LSE customer transfer from, If the LSE is registered with CRR system
+        toLse:
+          type: string
+          pattern: '^([0-9]*)$'
+          maxLength: 9
+          description: Data Universal Numbering System ID (DUNS ID) of the LSE customer transfer to, If the LSE is registered with CRR system
+        numCustomerTransfer:
+          type: integer
+          minimum: 1
+          maximum: 9223372036854775807          
+          description: number of customer transfer
+    DASRsummaryset:
+      type: object
+      required:
+        - loadMigrationMarket
+        - udcName
+        - dasrRecords
+      properties:
+        loadMigrationMarket:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of load migration market
+          maxLength: 50
+        udcName:
+          type: string
+          description: name of UDC
+          maxLength: 64
+          example: 'UDC1'   
+        dasrRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/DASRsummary'
+    PostDASRsummaryset:
+      type: object
+      required:
+        - loadMigrationMarket
+        - udcName
+        - effectiveDate
+        - dasrRecords
+      properties:
+        loadMigrationMarket:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of load migration market
+          maxLength: 50
+        udcName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of UDC
+          maxLength: 64
+          example: 'UDC1'   
+        effectiveDate:
+          type: string
+          description: effective date
+          format: date-time
+          example: '2021-09-01T07:00:00Z'
+        dasrRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostDASRsummary'
+    CustomerRate:
+      type: object
+      required:
+        - class
+        - tou
+        - seasonNumber
+        - year
+        - kwRate
+        - uploadDate
+        - lastModified
+      properties:
+        class:
+          $ref: '#/components/schemas/CustomerClass'     
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        seasonNumber:
+          $ref: '#/components/schemas/Season'
+        kwRate:
+          $ref: '#/components/schemas/Megawatt' 
+        year:
+          type: integer
+          description: year that was used as the basis to compute the KW/customer rates.
+          minimum: 2000
+          maximum: 2999
+        uploadDate:
+          type: string
+          description: date and time when customer rate is uploaded
+          format: date-time
+          example: '2021-09-01T07:00:00Z'
+        lastModified:
+          type: string
+          description: date and time when customer rate is submitted
+          format: date-time
+          example: '2021-09-01T07:00:00Z'
+    PostCustomerRate:
+      type: object
+      required:
+        - class
+        - tou
+        - seasonNumber
+        - year
+        - kwRate
+      properties:
+        class:
+          $ref: '#/components/schemas/CustomerClass'     
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        seasonNumber:
+          $ref: '#/components/schemas/Season'
+        kwRate:
+          $ref: '#/components/schemas/Megawatt' 
+        year:
+          type: integer
+          description: year that was used as the basis to compute the KW/customer rates.
+          minimum: 2000
+          maximum: 2999
+    CustomerRateSet:
+      type: object
+      required:
+        - loadMigrationMarket
+        - udcName
+        - customerRateRecords
+      properties:
+        loadMigrationMarket:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of load migration market
+          maxLength: 50
+        udcName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of UDC
+          maxLength: 64
+          example: 'UDC1'   
+        customerRateRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerRate'
+    PostCustomerRateSet:
+      type: object
+      required:
+        - loadMigrationMarket
+        - udcName
+        - customerRateRecords
+      properties:
+        loadMigrationMarket:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of load migration market
+          maxLength: 50
+        udcName:
+          type: string
+          description: name of UDC
+          maxLength: 64
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          example: 'UDC1'   
+        customerRateRecords:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostCustomerRate'
+    Season:
+      type: integer
+      description: number representing one of four quarterly seasons in a year
+      enum:
+        - 1
+        - 2
+        - 3
+        - 4
+    CustomerClass:
+      type: string
+      description: names of customer classes for LSE
+      enum:
+        - AGRICULTURAL
+        - RESIDENTIAL
+        - LARGE15_2
+        - LIGHTING
+        - MED_COM
+        - LARGE1_15
+        - SMALL_COM
+        - LARGE2_3
+        - LARGE3_5
+        - LARGE5_8
+        - LARGE8_13
+        - LARGE13_18
+        - LARGE18_24
+        - LARGE24_30
+        - LARGE30_40
+        - LARGE40_50
+        - LARGE50_60
+        - LARGE60_70
+        - LARGE70_80
+        - LARGE80_UP
+        - INDUSTRIAL   
+    CrrType:
+      type: string
+      description: CRR types applicable to load migration
+      enum:
+        - LSE_LMT
+        - LMT_CNT 
+    LoadPercentage:
+      type: object
+      required:
+        - id
+        - udc
+        - fromLse
+        - toLse
+        - fromAssetOwner
+        - toAssetOwner
+        - seasonNumber
+        - tou
+        - loadPercentage
+        - loadTransferMw
+      properties:
+        id:
+          type: integer
+          description: unique identifier assigned by the system to a load transfer record
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example: 191
+        udc:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of UDC
+          maxLength: 64
+          example: UPGAE, USCE, USDGE
+        fromLse:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of LSE who lost load
+          maxLength: 64
+          example: LSE1
+        toLse:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of LSE who gained load
+          maxLength: 64
+          example: LSE2
+        fromAssetOwner:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of asset owner who lost load
+          maxLength: 64
+          example: AO1
+        toAssetOwner:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of asset owner who gained load
+          maxLength: 64
+          example: AO2
+        seasonNumber:
+          $ref: '#/components/schemas/Season'
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        loadPercentage:
+          type: number
+          description: load percentage
+          minimum: 0
+          maximum: 100
+          format: double
+          example: 0.004795
+        loadTransferMw:
+          type: number
+          description: load transfer in mw. The precision can be higher than three decimal places.         
+          format: double
+          minimum: 0
+          maximum: 9223372036854775807
+          example: 0.101298
+    LoadPercentageResults:
+      type: object
+      required:
+        - loadMigrationMarket
+        - loadMigrationPercentages
+      properties:
+        loadMigrationMarket:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of load migration market
+          maxLength: 50
+        loadMigrationPercentages:
+          type: array
+          description: a list of load percentage for LSE pair of existing load migration CRRs
+          items:
+            $ref: '#/components/schemas/LoadPercentage'          
+            
+    LoadMigrationCrr:
+      type: object
+      required:
+        - crrId
+        - parentCrrId
+        - assetOwner
+        - source
+        - sink
+        - tou
+        - startDate
+        - endDate
+        - crrType
+          
+      properties:
+        crrId:
+          type: integer
+          description: unique identifier of load migration CRR
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+        parentCrrId:
+          type: integer
+          description: unique identifier of original CRR that load migration CRR is created from
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+        assetOwner:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of asset owner who owns the CRR
+          maxLength: 64
+        source:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of source
+          maxLength: 150
+        sink:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of sink
+          maxLength: 150
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'        
+        startDate:
+          type: string
+          description: effective start date of CRR
+          format: date-time
+          example: '2021-09-01T07:00:00Z'
+        endDate:
+          type: string
+          description: effective end date of CRR
+          format: date-time
+          example: '2021-10-01T07:00:00Z'          
+        crrType:
+          $ref: '#/components/schemas/CrrType'      
+        initialMw:
+          type: number
+          description: load migration crr MW. When this value is available, it means that this load migration CRR is created by the specified load migration market.  
+          pattern: '[\-+]?[\d]+\.?\d?\d?\d?'
+          format: double
+          example: 0.001  
+        adjustedMw:
+          type: number
+          description : incremental MW added to the specified CRR in the result of the specified load migration market. The CRR was created from a previous load migration market.          
+          pattern: '[\-+]?[\d]+\.?\d?\d?\d?'
+          format: double
+          example: 0.001  
+    LoadMigrationResults:
+      type: object
+      required:
+        - loadMigrationMarket
+        - loadMigrationCrrs
+      properties:
+        loadMigrationMarket:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of load migration market
+          maxLength: 50
+        loadMigrationCrrs:
+          type: array
+          description: a list of load migration CRRs and incremental adjusted MW of existing load migration CRRs
+          items:
+            $ref: '#/components/schemas/LoadMigrationCrr'

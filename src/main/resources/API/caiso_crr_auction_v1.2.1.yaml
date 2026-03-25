@@ -1,0 +1,1094 @@
+openapi: 3.0.0
+
+info:
+  description: OpenAPI allows viewing, saving, deleting, and submitting CRR bids and offers to CRR Auctions.\n <table><tr><td>OpenAPI Spec Revision</td><td>Date</td><td>Change Log</td></tr><tr><td>1.0.0</td><td>2024-01-10</td><td>Initial Version</td></tr><tr><td>1.1.0</td><td>2024-06-12</td><td>Updated delete portfolio API from /auction/v1.0/portfolio/{marketName}/{portfolioName} to /auction/v1.0/portfolio/delete</td></tr><tr><td>1.1.1</td><td>2024-06-12</td><td>Fixed typographical errors</td></tr><tr><td>1.1.2</td><td>2024-07-22</td><td>Added an error code 'SER0017'; Updated API summary a very high level preview of what the endpoint achieves and the description can explain it a bit further; Revised description for model 'PortfolioStatusType'</td></tr><tr><td>1.1.3</td><td>2024-08-05</td><td>Updated all attribute 'PortfolioName' regex spec; Added an error code SER0022 'Portfolio name can contain alphanumeric or alphanumeric with one or more space, underscore, hyphen and dot.' and added error codes SER0018, SER0019, SER0020 and SER0021.</td></tr><tr><td>1.1.4</td><td>2024-08-22</td><td>Made sure Auction and Nomination APIs are using the same pattern checks.</td></tr></tr><tr><td>1.1.5</td><td>2024-09-03</td><td>Update 'PortfolioName' maxLength specification from 50 chars to 100 chars.</td></tr><tr><td>1.1.6</td><td>2024-09-04</td><td>Added Error codes SER0022 SER0008 AOV0005 to specification</td></tr><tr><td>1.1.7</td><td>2024-10-02</td><td>Added Error codes SEC0002 to specification; Change minimum value of Megawatt to zero because the first bid point of a bid curve must have zero Megawatt; Modify description of errorMessage for PortfolioCredit object; Add description for PortfolioStatusType enum NEW.</td></tr><tr><td>1.2.0</td><td>2024-11-04</td><td>Fixed a typographical error; Change required property from bidId to crrId in 'NewOffer'; Update all date-time field examples and remove 'milliseconds' component.; Add requiredCredit to required field and add errorMessage as optional field in PortfolioCredit; Add description to INVALID portfolio status; Update CRRServiceException by having an array of 'ErrorDetail' which contain severity, errorCode, and errorDescription; Add comments to description of CRRServiceException; Replace error code SER0018 with GEN0003; Replace error code ATH0002 with SEC0001; Remove error code MKT0002 because CAISO does not have market round specification.; Replace error code NOM0128 with AUC0037 for status validaiton of portfolio during submission.; Change prefix of error codes in description of 'CRRServiceException' to 'POR' for Portfolio Validations that are applicable to both Nomination and Auction APIs; Add error code POR0010 for portfolio deletion error because portfolio is submitted to an auction.; Add error code SER0030 for error from other generic data validations or error in the individual record in the body; Update responses to have HTTP status codes 403, 404, and 500 with content of object CRRServiceException; Error code SER0028 is used for response 404 and error code SER0029 for response 500;</td></tr><tr><td>1.2.1</td><td>2024-12-20</td><td>Added Error codes NOM0129 and POR0011 and POR0012 to specification.</td></tr></table>
+  version: "1.2.1"
+  title: CRR Auction API
+  contact:
+    email: servicedesk@caiso.com
+servers:
+  - description: Mapstage Server Endpoint
+    url: https://mapstage-api.caiso.com/crr
+
+tags:
+  - name: CRR Auction Write
+    description: require read/write access
+  - name: CRR Auction Read
+    description: requires read only
+
+paths:
+  /auction/v1.0/portfolio:
+    get:
+      tags:
+        - CRR Auction Read
+      summary: Gets bids and offers from given auction portfolio
+      operationId: getPortfolio
+      description: |
+        By passing in auction market name, portfolio name, and participant name, the portfolio containing bids and offers will be returned.
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/PortfolioName'
+        - $ref: '#/components/parameters/ParticipantName'
+
+      responses:
+        '200':
+          description: A portfolio of CRR Bids and Offers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'          
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'          
+    delete:
+      tags:
+        - CRR Auction Write
+      summary: Deletes a portfolio
+      operationId: deletePortfolio
+      description: Deletion of portfolio from the system
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/PortfolioName'
+        - $ref: '#/components/parameters/ParticipantName'
+
+      responses:
+        '200':
+          description: Portfolio Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioStatus'
+
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'               
+  /auction/v1.0/portfolioList:
+    get:
+      tags:
+        - CRR Auction Read
+      summary: Gets a portfolio list from given market name
+      operationId: getPortfolioList
+      description: |
+        By passing in auction market name and participant, a list of existing auction portfolios for the market and the participant is returned.
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/ParticipantName'
+
+      responses:
+        '200':
+          description: A list of existing portfolios of CRR Bids and Offers for the given auction market and participant
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Portfolio'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'     
+  /auction/v1.0/portfolioStatus:
+    get:
+      tags:
+        - CRR Auction Read
+      summary: Gets status of a portfolio
+      operationId: getPortfolioStatus
+      description: |
+        By passing in auction market name, portfolio name, and participant name, the status of the specified portfolio will be returned
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/PortfolioName'
+        - $ref: '#/components/parameters/ParticipantName'
+
+      responses:
+        '200':
+          description: Status of Auction Portfolio for given market name, portfolio name, and participant name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'     
+  /auction/v1.0/portfolioRequiredCredit:
+    get:
+      tags:
+        - CRR Auction Read
+      summary: Gets a required credit value from given portfolio
+      operationId: getPortfolioRequiredCredit
+      description: |
+        By passing in auction market name, portfolio name, and participant name, the required credit will be returned if the portfolio is submitted.
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/PortfolioName'
+        - $ref: '#/components/parameters/ParticipantName'
+
+      responses:
+        '200':
+          description: Required credit information of Portfolio. Available only for portfolio that
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioCredit'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'     
+  /auction/v1.0/portfolioCreation:
+    post:
+      tags:
+        - CRR Auction Write
+      summary: Creates a new auction portfolio
+      operationId: portfolioCreation
+      description: Adds a auction portfolio to a specified auction market. Each bid/offer is for a period. Bids/Offers for various applicable period for the auction can be in the same portfolio.
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+      responses:
+        '200':
+          description: Portfolio Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioStatus'
+
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'     
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPortfolio'
+        description: New Auction Portfolio for the specified auction market and participant
+  /auction/v1.0/portfolioSubmission:
+    post:
+      tags:
+        - CRR Auction Write
+      summary: Submits a portfolio to an auction market
+      operationId: portfolioSubmission
+      description: Submits a portfolio to given market name and participant name
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+      responses:
+        '200':
+          description: Portfolio Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioStatus'
+
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'     
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PortfolioIdentifier'
+        description: Portfolio Name, Auction Market Name, and Participant Name
+
+  /auction/v1.0/portfolioRetraction:
+    post:
+      tags:
+        - CRR Auction Write
+      summary: Retracts a portfolio from being submitted to an auction market
+      operationId: postPortfolioRetraction
+      description: retract the specified portfolio from being submitted to the specified auction for the given participant
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+      responses:
+        '200':
+          description: Portfolio Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioStatus'
+
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'     
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PortfolioIdentifier'
+        description: Portfolio Name, Auction Market Name, and Participant Name
+components:
+  parameters:
+    MarketName:
+      in: query
+      name: marketName
+      description: The name of the auction market
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 50
+    PortfolioName:
+      in: query
+      name: portfolioName
+      description:  The name of the auction portfolio
+      required: true
+      schema:
+        type: string
+        pattern: '^(?!.*[\s\._-])[A-Za-z0-9]+$|^(?=.*[A-Za-z0-9])[A-Za-z0-9\s\._-]+$'
+        maxLength: 100
+    ParticipantName:
+      in: query
+      name: participantName
+      description: Market Participant Name
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 10
+      example: CISO
+    CAISORequestUUID:
+      in: header
+      name: caiso-request-id
+      description: An HTTP header with a unique UUID (Universal Unique Identifier) for every request
+      schema:
+        type: string
+        format: uuid
+      required: true
+      example: c9b09ec1-3a3a-4e68-a4d7-89aece526b05
+  
+  schemas:
+    CRRServiceException:
+        description: |
+          <table>
+            <tr>
+              <th>Error Code</th>
+              <th>Description</th>
+              <th>Comment</th>
+            </tr>
+            <tr>
+              <td> POR0010 </td>
+              <td> Portfolio "{0}" cannot be deleted because it is in SUBMITTED or PENDING RETRACTION status. </td>
+              <td> Portfolio Validation </td>
+            </tr>  
+            <tr>
+              <td> POR0011 </td>
+              <td> Unable to retract portfolio due to portfolio is in errors. </td>
+              <td> Portfolio Validation </td>
+            </tr>  
+            <tr>
+              <td> POR0012 </td>
+              <td> Unable to retract portfolio due to portfolio is new and empty. </td>
+              <td> Portfolio Validation </td>
+            </tr>  
+            <tr>
+              <td> POR0013 </td>
+              <td> Portfolio "{0}" is empty and prohibited to be submitted. </td>
+              <td> Portfolio Validation </td>
+            </tr>            
+            <tr>
+              <td> POR0023 </td>
+              <td> Portfolio "{0}" does not belong to the specified participant "{1}". </td>
+              <td> Portfolio Validation </td>
+            </tr>            
+            <tr>
+              <td> POR0038 </td>
+              <td> Portfolio "{0}" is not in SUBMITTED status and cannot be retracted. </td>
+              <td> Portfolio Validation </td>
+            </tr>
+            <tr>
+              <td> POR0051 </td>
+              <td> Portfolio "{0}" has already been submitted to market "{1}" or it is still in pending retraction. </td>
+              <td> Portfolio Validation </td>
+            </tr>
+            <tr>
+              <td> POR0100 </td>
+              <td> Portfolio Name does not exist for the specified market name, portfolio name, and participant name. </td>
+              <td> Portfolio Validation </td>
+            </tr>
+            <tr>
+              <td> POR0101 </td>
+              <td> Portfolio by name "{0}" already exists for the specified market name and participant name. </td>
+              <td> Portfolio Validation </td>
+            </tr>
+            <tr>
+              <td> POR0103 </td>
+              <td> Portfolio Name "{0}" must be less than or equal to 100 characters. </td>
+              <td> Portfolio Validation </td>
+            </tr>
+            <tr>
+              <td> POR0215 </td>
+              <td> Invalid Portfolio Name. It cannot be blank. </td>
+              <td> Portfolio Validation </td>
+            </tr>
+            <tr>
+              <td> POR0306 </td>
+              <td> The portfolio is being edited by another session. Please try again later. </td>
+              <td> Portfolio Validation </td>
+            </tr>
+            <tr>
+              <td> NOM0129 </td>
+              <td> Unable to retract portfolio due to MP eligibility or window is closed. </td>
+              <td> Portfolio Validation </td>
+            </tr>
+            <tr>
+              <td> POR0308 </td>
+              <td> Unable to access portfolio with name "{0}". Please try again later. </td>
+              <td> Portfolio Validation </td>
+            </tr>
+            <tr>
+              <td> GEN0003 </td>
+              <td> System is busy due to too many users, please try again later. </td>
+              <td> Generic System Validation </td>
+            </tr>
+            <tr>
+              <td> MKT0001 </td>
+              <td> Market name does not exist in the system. </td>
+              <td> Market Validation </td>
+            </tr>
+            <tr>
+              <td> MKT0004 </td>
+              <td> Submission window of the market is closed.  </td>
+              <td> Market Validation </td>
+            </tr>
+            <tr>
+              <td> AUC0037 </td>
+              <td> Portfolio "{0}" associated with auction "{1}" cannot be submitted because it is in ERROR status.</td>
+              <td> Auction Validation </td>
+            </tr>
+            <tr>
+              <td> SEC0001 </td>
+              <td> Access for Market Participant {0} is denied due to insufficient privilege. </td>
+              <td> Security Validation </td>
+            </tr>
+            <tr>
+              <td> SEC0002 </td>
+              <td> Access Denied. Please contact your Local Security Administrator. </td>
+              <td> Security Validation</td>
+            </tr>
+            <tr>
+              <td> SER0001 </td>
+              <td> Please report the issue and provide the API access parameters to CAISO. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0017 </td>
+              <td> Invalid request "{0}". </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0022 </td>
+              <td> Portfolio name can contain alphanumeric or alphanumeric with one or more space, underscore, hyphen and dot. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0028 </td>
+              <td> Internal Service Error </td>
+              <td> Service and Business validation for response in 500</td>
+            </tr>
+            <tr>
+              <td> SER0029</td>
+              <td> Cannot find a resource </td>
+              <td> Service and Business validation for response in 404</td>
+            </tr>
+            <tr>
+              <td> SER0030 </td>
+              <td> {0}</td>
+              <td> Service and Business validation. Error from other generic data validations or error in the individual record in the body </td>
+            </tr>
+          </table>
+
+        type: object
+        required:
+          - errorList
+          - creationTime
+  
+        properties:
+          errorList:
+            type: array
+            items:
+              $ref: '#/components/schemas/ErrorDetail'
+          creationTime:
+            type: string
+            description: date and time when the error is issued.
+            format: date-time
+            example: '2099-07-04T09:12:33Z'
+          serviceVersion:
+            type: string
+            description: version of service
+            maxLength: 10
+            example: 'V1.0'
+    ParticipantName:
+      type: string
+      pattern: '^([a-zA-Z0-9\. _-]+)$'
+      maxLength: 10
+      example: CISO
+
+    HedgeType:
+      type: string
+      description: CRR Hedge Type Obligation (OBL) or Option (OPT)
+      enum:
+        - OBL
+        - OPT
+
+    ErrorDetail:
+      type: object
+      required:
+        - errorCode
+        - errorDescription
+        - severity
+
+      properties:  
+          errorDescription:
+            type: string
+            description: "JSON syntax error, error in the input parameter of the request (such as the object identifier does not exist), generic data validation (such as the submission window is not open), or error in the individual record"
+            maxLength: 1000
+            example: "Error description."
+          errorCode:
+            type: string
+            description: error code
+            maxLength: 15
+            example: 'XXX0000'
+          severity:
+            type: string
+            enum:
+              - FATAL
+              - ERROR          
+            
+    Megawatt:
+      type: number
+      description: quantity unit of CRR
+      pattern: '[\-+]?[\d]+\.?\d?\d?\d?'
+      format: double
+      minimum: 0
+      multipleOf: 0.001
+      example: 0.1    
+
+    TimeOfUse:
+      type: string
+      description: Time-of-Use
+      enum:
+        - ON
+        - OFF
+
+    CrrType:
+      type: string
+      description: CRR Type
+      enum:
+        - LSE
+        - AUC
+        - OBAALSE
+        - MT
+        - LSE_LMT
+        - LMT_CNT
+        - LSE_THCNT
+        - MT_TOR
+
+    BidPoint:
+      type: object
+      description: bid point is comprised of bid MW and bid Price
+      required:
+        - mw
+        - price
+
+      properties:
+        mw:
+          $ref: '#/components/schemas/Megawatt'
+        price:
+          type: number
+          description: Price in USD per Megawatt specified in bid points of a bid curve. It must be up to 2 decimal places. It can be zero, positive, or negative.
+          pattern: '[\-+]?[\d]+\.?\d?\d?'
+          format: double
+          multipleOf: 0.01
+          example: 1.00
+
+    NewBid:
+      type: object
+      required:
+        - assetOwner
+        - source
+        - sink
+        - hedgeType
+        - tou
+        - period
+        - crrType
+        - bidCurve
+
+      properties:
+        assetOwner:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]+)$'
+          description: name of CRR asset owner which is SC ID
+          maxLength: 10
+          example : 'ABC1'
+        source:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of source for CRR Bid
+          maxLength: 150
+          example : 'Source_1'
+        sink:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of sink for CRR Bid
+          maxLength: 150
+          example : 'Sink_1'
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        period:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: seasonal or monthly effective period of CRR
+          maxLength: 20
+          example: '2024_S01'
+        crrType:
+          $ref: '#/components/schemas/CrrType'
+        bidCurve:
+          type: array
+          description: bid curve contains minimum of two bid points and up to 20 bid points. bid curve of a buy bid must be monotonically non-decreasing and starts with zero bid MW
+          minItems: 2
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/BidPoint'
+        description:
+          type: string
+          pattern: '^([a-zA-Z0-9\#\@\\. _-]*)$'
+          description: optional text for customized note or reference
+          maxLength: 512
+          example: 'My bid for Source_1 to Sink_1'
+    NewOffer:
+      type: object
+      required:
+        - crrId
+        - assetOwner
+        - source
+        - sink
+        - hedgeType
+        - tou
+        - period
+        - crrType
+        - bidCurve
+
+      properties:
+        crrId:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 9999999999
+          example : 123456
+        assetOwner:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]+)$'
+          description: name of CRR asset owner which is SC ID
+          maxLength: 10
+          example : 'ABC1'
+        source:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of source for CRR bid
+          maxLength: 150
+          example : 'Source_1'
+        sink:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of sink for CRR bid
+          maxLength: 150
+          example : 'Sink_1'
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        period:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: seasonal or monthly effective period of CRR bid
+          maxLength: 20
+          example: '2024_S01'
+        crrType:
+          $ref: '#/components/schemas/CrrType'
+        bidCurve:
+          type: array
+          description: bid curve contains minimum of two bid points and up to 20 bid points. bid curve of an offer must be monotonically non-increasing and starts with zero bid MW
+          minItems: 2
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/BidPoint'
+        description:
+          type: string
+          pattern: '^([a-zA-Z0-9\#\@\. _-]*)$'
+          description: optional text for customized note or reference
+          maxLength: 512
+          example: 'My bid for Source_1 to Sink_1'
+
+    NewPortfolio:
+      type: object
+      required:
+        - portfolioName
+        - marketName
+        - newBids
+        - newOffers
+        - participantName
+      properties:
+        portfolioName:
+          type: string
+          pattern: '^(?!.*[\s\._-])[A-Za-z0-9]+$|^(?=.*[A-Za-z0-9])[A-Za-z0-9\s\._-]+$'
+          description: name of CRR auction portfolio
+          maxLength: 100
+          example: Portfolio XYZ
+        marketName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of CRR Auction market that the portfolio is designated for
+          maxLength: 50
+          example: AUC_AN_2024
+        newBids:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewBid'
+        newOffers:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewOffer'
+        participantName:
+          $ref: '#/components/schemas/ParticipantName'
+
+    Bid:
+      type: object
+      required:
+        - bidId
+        - assetOwner
+        - source
+        - sink
+        - hedgeType
+        - tou
+        - period
+        - crrType
+        - bidCurve
+
+      properties:
+        bidId:
+          type: integer
+          format: int64
+          description: unique identifier assigned to a bid or an offer by the CRR System upon save
+          minimum: 1
+          maximum: 9999999999
+          example : 123456
+        assetOwner:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]+)$'
+          description: name of CRR asset owner which is SC ID
+          maxLength: 10
+          example : 'ABC1'
+        source:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of source for CRR bid
+          maxLength: 150
+          example : 'Source_1'
+        sink:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of sink for CRR bid
+          maxLength: 150
+          example : 'Sink_1'
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        period:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: seasonal or monthly effective period of CRR bid
+          maxLength: 20
+          example: '2024_S01'
+        crrType:
+          $ref: '#/components/schemas/CrrType'
+        bidCurve:
+          type: array
+          description: bid curve contains minimum of two bid points and up to 20 bid points
+          minItems: 2
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/BidPoint'
+        description:
+          type: string
+          pattern: '^([a-zA-Z0-9\#\@\. _-]*)$'
+          description: optional text for customized note or reference
+          maxLength: 512
+          example: 'My bid for Source_1 to Sink_1'
+
+    Offer:
+      type: object
+      required:
+        - bidId
+        - crrId
+        - assetOwner
+        - source
+        - sink
+        - hedgeType
+        - tou
+        - period
+        - crrType
+        - bidCurve
+
+      properties:
+        bidId:
+          type: integer
+          format: int64
+          description: unique identifier assigned to a bid or an offer by the CRR System upon save
+          minimum: 1
+          maximum: 9999999999
+          example : 123456
+        crrId:
+          type: integer
+          description: ID of CRR being offered for sale
+          format: int64
+          example : 123456
+        assetOwner:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]+)$'
+          description: name of CRR asset owner which is SC ID
+          maxLength: 10
+          example : 'ABC1'
+        source:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: source name of CRR being offered for sale
+          maxLength: 150
+          example : 'Source_1'
+        sink:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: sink name of CRR being offered for sale
+          maxLength: 150
+          example : 'Sink_1'
+        hedgeType:
+          $ref: '#/components/schemas/HedgeType'
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'
+        period:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: seasonal or monthly effective period of CRR offer
+          maxLength: 20
+          example: '2024_S01'
+        crrType:
+          $ref: '#/components/schemas/CrrType'
+        bidCurve:
+          type: array
+          description: bid curve contains minimum of two bid points and up to 20 bid points
+          minItems: 2
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/BidPoint'      
+        description:
+          type: string
+          pattern: '^([a-zA-Z0-9\#\@\. _-]*)$'
+          description: optional text for customized note or reference
+          maxLength: 512
+          example: 'My sell offer for Source_1 to Sink_1'
+
+    Portfolio:
+      type: object
+      required:
+        - portfolioName
+        - marketName
+        - bids
+        - offers
+      properties:
+        portfolioName:
+          type: string
+          pattern: '^(?!.*[\s\._-])[A-Za-z0-9]+$|^(?=.*[A-Za-z0-9])[A-Za-z0-9\s\._-]+$'
+          description: name of CRR auction portfolio
+          maxLength: 100
+          example: Portfolio XYZ
+        marketName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of CRR Auction market that the portfolio is designated for
+          maxLength: 50
+          example: AUC_AN_2024
+        bids:
+          type: array
+          items:
+            $ref: '#/components/schemas/Bid'
+        offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Offer'
+
+    PortfolioIdentifier:
+      type: object
+      required:
+        - portfolioName
+        - marketName
+        - participantName
+
+      properties:
+        portfolioName:
+          type: string
+          pattern: '^(?!.*[\s\._-])[A-Za-z0-9]+$|^(?=.*[A-Za-z0-9])[A-Za-z0-9\s\._-]+$'
+          description: name of CRR auction portfolio
+          maxLength: 100
+          example: Portfolio XYZ
+        marketName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of CRR Auction market that the portfolio is designated for
+          maxLength: 50
+          example: AUC_AN_2024
+        participantName:
+          $ref: '#/components/schemas/ParticipantName'
+        
+    PortfolioStatusType:
+      type: string
+      description: Status VALID is assigned to a portfolio containing valid bids and offers. Status INVALID is assigned to a portfolio containing one or more invalid bids and offers. A bid/offer with an INVALID status is saved only if the record is added to the portfolio using Add and Save button in MUI Bid/Offer Editor or the portfolio fails the validations during portfolio submission. Status SUBMITTED is assigned to a portfolio after portfolio submission is successful. Status REJECTED is a transitional status to VALID status after portfolio submission is rejected. Status DELETED is a confirmation of the portfolio deletion. Status NEW is assigned to a blank portfolio.
+      enum:
+        - INVALID
+        - VALID
+        - SUBMITTED
+        - REJECTED
+        - DELETED
+        - NEW
+
+    PortfolioStatus:
+      type: object
+      required:
+        - portfolioName
+        - marketName
+        - status
+
+      properties:
+        portfolioName:
+          type: string
+          pattern: '^(?!.*[\s\._-])[A-Za-z0-9]+$|^(?=.*[A-Za-z0-9])[A-Za-z0-9\s\._-]+$'
+          description: name of auction portfolio
+          maxLength: 100
+          example: Portfolio XYZ
+        marketName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of CRR Auction market that the portfolio is designated for
+          maxLength: 50
+          example: AUC_AN_2024
+        status:
+          $ref: '#/components/schemas/PortfolioStatusType'
+        errorMessage:
+          type: string
+          description: error message or error report indicating the reason that the portfolio is in INVALID status if the bids/offers in the portfolio are created from MUI Bid/Offer Editor or if portfolio submission fails.
+          maxLength: 2147483647
+          example: 'CRR ID 1111 is prohibited to be sold while another secondary market transaction to trade this CRR is currently pending for credit check.; A sell offer of CRR ID : "1097488538" has already been submitted.;'
+
+    PortfolioCredit:
+      type: object
+      required:
+        - portfolioName
+        - marketName
+        - requiredCredit
+
+      properties:
+        portfolioName:
+          type: string
+          pattern: '^(?!.*[\s\._-])[A-Za-z0-9]+$|^(?=.*[A-Za-z0-9])[A-Za-z0-9\s\._-]+$'
+          description: name of auction portfolio
+          maxLength: 100
+          example: Portfolio XYZ
+        marketName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of CRR Auction market that the portfolio is designated for
+          maxLength: 50
+          example: AUC_AN_2024
+        requiredCredit:
+          type: number
+          description: total estimated required credit for submitting bids and offers in the portfolio
+          pattern: '[\-+]?[\d]+\.?\d?\d?'
+          format: double
+          multipleOf: 0.01
+          minimum: 0
+          example: 1.00

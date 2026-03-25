@@ -1,0 +1,544 @@
+openapi: 3.0.0
+servers:
+  - description: Mapstage Server Endpoint
+    url: https://mapstage-api.caiso.com/crr
+info:
+  description: OpenAPI allows CRR Market Status download. <table><tr><td>OpenAPI Spec Revision</td><td>Date</td><td>Change Log</td></tr><tr><td>1.0.0</td><td>2024-01-10</td><td>Initial Version</td></tr><tr><td>1.1.0</td><td>2024-06-12</td><td>Fixed OperationId for API /marketInfo</td></tr><tr><td>1.1.1</td><td>2024-06-12</td><td>Fixed typographical errors</td></tr><tr><td>1.1.2</td><td>2024-07-22</td><td>Added an error code 'SER0017'; Updated API summary a very high level preview of what the endpoint achieves and the description can explain it a bit further</td></tr><tr><td>1.2.0</td><td>2024-11-04</td><td>Update all date-time field examples and remove 'milliseconds' component.; Update CRRServiceException by having an array of 'ErrorDetail' which contain severity, errorCode, and errorDescription; Add comments to description of CRRServiceException; Replace error code ATH0002 with SEC0001; Remove error codes that are not applicable to market status APIs; Update responses to have HTTP status codes 403, 404, and 500 with content of object CRRServiceException; Error code SER0028 is used for response 404 and error code SER0029 for response 500; Update descriptions of 'activeAllocationMarkets' and 'activeAuctionMarkets' because the active markets include markets in PREP, OPEN, and CLOSED.;</td></tr></table>
+  version: 1.2.0
+  title: CRR Market Status API
+  contact:
+    email: servicedesk@caiso.com
+tags:
+  - name: CRR Market Status Read
+    description: requires read only
+paths:
+  /marketstatus/v1.0/marketStatus:
+    get:
+      tags:
+        - CRR Market Status Read
+      summary: Gets status of given CRR Allocation or Auction market name
+      operationId: getMarketStatus
+      description: gets status of market by the given CRR Allocation or Auction market name for authorized market participant
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: Status of given CRR Allocation or Auction market name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /marketstatus/v1.0/activeAllocationMarkets:
+    get:
+      tags:
+        - CRR Market Status Read
+      summary: Gets a list of active Allocation markets
+      operationId: getActiveAllocationMarkets
+      description: gets a list of CRR Allocation markets whose results have not been posted for authorized market participant
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'
+      responses:
+        '200':
+          description: Information of CRR markets that meet the given criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Market'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'  
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /marketstatus/v1.0/activeAuctionMarkets:
+    get:
+      tags:
+        - CRR Market Status Read
+      summary: Gets a list of active Auction markets
+      operationId: getActiveAuctionMarkets
+      description: gets a list of CRR Auction markets whose results have not been posted for authorized market participant
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'      
+      responses:
+        '200':
+          description: Information of CRR markets that meet the given criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Market'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /marketstatus/v1.0/marketInfo:
+    get:
+      tags:
+        - CRR Market Status Read
+      summary: Gets information of given market name
+      operationId: getMarketInfo
+      description: gets effective period(s), open date and close date of the given CRR Allocation or Auction market name for authorized market participant
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/MarketName'      
+        - $ref: '#/components/parameters/ParticipantName'   
+      responses:
+        '200':
+          description: effective period(s), open date, close date, and status of the given CRR Allocation or Auction market name.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Market'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /marketstatus/v1.0/postedAllocationMarkets:
+    get:
+      tags:
+        - CRR Market Status Read
+      summary: Gets a list of posted Allocation markets
+      operationId: getPostedAllocationMarkets
+      description: gets a list of CRR Allocation markets whose results have been posted for authorized market participant
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'      
+      responses:
+        '200':
+          description: Information of CRR markets that meet the given criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Market'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /marketstatus/v1.0/postedAuctionMarkets:
+    get:
+      tags:
+        - CRR Market Status Read
+      summary: gets a list of posted Auction markets
+      operationId: getPostedAuctionMarkets
+      description: gets a list of CRR Auction markets whose results have been posted for authorized market participant
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'      
+      responses:
+        '200':
+          description: Information of CRR markets that meet the given criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Market'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'   
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+components:
+  parameters:
+    MarketName:
+      in: query
+      name: marketName
+      description: The name of a CRR market
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 50
+      example: ALLOC_AN_2024_T1
+    ParticipantName:
+      in: query
+      name: participantName
+      description: Market Participant Name
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 64
+      example: CISO
+      
+    CAISORequestUUID:
+      in: header
+      name: caiso-request-id
+      description: An HTTP header with a unique UUID (Universal Unique Identifier) for every request
+      schema:
+        type: string
+        format: uuid
+      required: true
+      example: c9b09ec1-3a3a-4e68-a4d7-89aece526b05
+  
+  schemas:
+    CRRServiceException:
+        description: |
+          <table>
+            <tr>
+              <th>Error Code</th>
+              <th>Description</th>
+              <th>Comment</th>
+            </tr>
+            <tr>
+              <td> SEC0001 </td>
+              <td> Access for Market Participant {0} is denied due to insufficient privilege. </td>
+              <td> Security Validation </td>
+            </tr>
+            <tr>
+              <td>SEC0002</td>
+              <td>Access Denied. Please contact your Local Security Administrator.</td>
+              <td> Security Validation </td>
+            </tr>
+            <tr>
+              <td>MKT0001</td>
+              <td>Market name does not exist in the system.</td>
+              <td> Market Validation </td>
+            </tr>
+            <tr>
+              <td>MKT0004</td>
+              <td>Submission window of the market is closed.</td>
+              <td> Market Validation </td>
+            </tr>
+            <tr>
+             <td>SER0001</td>
+             <td>Please report the issue and provide the API access parameters to CAISO.</td>
+             <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0002</td>
+              <td>Invalid participant name {0}.</td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0005</td>
+              <td>Invalid market type or term of market {0}.</td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0006</td>
+              <td>ToDate is after FromDate.</td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0007</td>
+              <td>Unable to find any message between the fromDate and the toDate.</td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0017</td>
+              <td>Invalid request "{0}".</td>
+              <td> Service and Business validation </td>
+            </tr>            
+            <tr>
+              <td> SER0028 </td>
+              <td> Internal Service Error </td>
+              <td> Service and Business validation for response in 500</td>
+            </tr>
+            <tr>
+              <td> SER0029</td>
+              <td> Cannot find a resource </td>
+              <td> Service and Business validation for response in 404</td>
+            </tr>                   
+            <tr>
+              <td> SER0030 </td>
+              <td> {0}</td>
+              <td> Service and Business validation. Error from other generic data validations or error in the individual record in the body </td>
+            </tr>            
+          </table>
+        type: object
+        required:
+          - errorList
+          - creationTime
+  
+        properties:
+          errorList:
+            type: array
+            items:
+              $ref: '#/components/schemas/ErrorDetail'
+          creationTime:
+            type: string
+            description: date and time when the error is issued.
+            format: date-time
+            example: '2099-07-04T09:12:33Z'
+          serviceVersion:
+            type: string
+            description: version of service
+            maxLength: 10
+            example: 'V1.0'
+    ErrorDetail:
+      type: object
+      required:
+        - errorCode
+        - errorDescription
+        - severity
+
+      properties:  
+          errorDescription:
+            type: string
+            description: "JSON syntax error, error in the input parameter of the request (such as the object identifier does not exist), generic data validation (such as the submission window is not open), or error in the individual record"
+            maxLength: 1000
+            example: "Error description."
+          errorCode:
+            type: string
+            description: error code
+            maxLength: 15
+            example: 'XXX0000'
+          severity:
+            type: string
+            enum:
+              - FATAL
+              - ERROR   
+    MarketStatus:
+      description: CRR market status - PREP is for markets whose submission window is not yet open. OPEN is for markets whose submission window is open. CLOSED is for markets whose submission is closed. POSTED is for markets whose results have been published. 
+      type: string
+      enum:
+        - PREP
+        - OPEN
+        - CLOSED
+        - POSTED
+    MarketType:
+      description: ALLOCATION market type is for CRR Allocation Markets. AUCTION market type is for CRR Auction Markets.
+      type: string
+      enum:
+        - ALLOCATION
+        - AUCTION
+    MarketTerm:
+      description: MONTHLY is for CRR markets that have a monthly effective period. ANNUAL is for CRR markets that have seasonal effective periods.
+      type: string
+      enum:
+        - MONTHLY
+        - ANNUAL
+    Period:
+      description: Information of CRR effective period which include period name, effective start date, and effective end date.
+      type: object
+      required:
+        - name
+        - startDate
+        - endDate
+      properties:
+        name:
+          type: string
+          description: CRR Effective Period Name
+          maxLength: 20
+          example: '2024_M09'
+        startDate:
+          type: string
+          format: date-time
+          description: Start date of CRR effective period in GMT timezone
+          example: '2024-09-01T07:00:00Z'        
+        endDate:
+          type: string
+          format: date-time
+          description: End date of CRR effective period in GMT timezone
+          example: '2024-10-01T06:59:59Z'       
+    TimeOfUse:
+      description: Time-of-use ON is for on-peak. Time-of-use OFF is for off-peak.
+      type: string
+      enum:
+        - ON
+        - OFF
+    SubmissionWindow:
+      description: Information of submission window which includes open date and time and close date and time
+      type: object
+      required:
+        - openDate
+        - closeDate
+      properties:
+        openDate:
+          type: string
+          format: date-time
+          description: date and time when the submission window is open
+          example: '2021-09-01T07:00:00Z'        
+        closeDate:
+          type: string
+          format: date-time
+          description: date and time when the submission window is closed
+          example: '2021-10-01T07:00:00Z'               
+    Product:
+      description: Product represents an effective period and a TOU in a CRR market
+      type: object
+      required:
+        - period
+        - tou
+      properties:
+        period:
+          $ref: '#/components/schemas/Period'       
+        tou:
+          $ref: '#/components/schemas/TimeOfUse'        
+    Market:
+      description: Market information which includes its name, market type, market term, timestamp when network and market data is published, submission window, and a list of effective periods and TOUs applicable to the market
+      type: object
+      required:
+        - name
+        - marketType
+        - marketTerm
+        - dataPublishDate
+        - submissionWindow
+        - products
+      properties:
+        name:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of a CRR Allocation or Auction market
+          maxLength: 50
+          example: 'AUC_MN_2024_M09'
+        marketType:
+          $ref: '#/components/schemas/MarketType'
+        marketTerm:
+          $ref: '#/components/schemas/MarketTerm' 
+        dataPublishDate:
+          type: string
+          format: date-time
+          description: date and time when the network and market data will be published to market participants
+          example: '2024-08-04T09:12:33Z'
+        submissionWindow:
+          $ref: '#/components/schemas/SubmissionWindow'          
+        products:
+          type: array
+          minItems: 2
+          description: a list of period-TOU products in the CRR market
+          items:
+            $ref: '#/components/schemas/Product'

@@ -1,0 +1,292 @@
+openapi: 3.0.0
+servers:
+  - description: Mapstage Server Endpoint
+    url: https://mapstage-api.caiso.com/crr
+info:
+  description: OpenAPI allows download of Public and Private Messages to CRR Participants.\n <table><tr><td>OpenAPI Spec Revision</td><td>Date</td><td>Change Log</td></tr><tr><td>1.0.0</td><td>2024-01-10</td><td>Initial Version</td></tr><tr><td>1.1.0</td><td>2024-06-12</td><td>Removed model 'ApiException' and Updated APIs to use the same exception model named 'CRRServiceException'</td></tr><tr><td>1.1.1</td><td>2024-06-12</td><td>Fixed typographical errors</td></tr><tr><td>1.1.2</td><td>2024-07-22</td><td>Added an error code 'SER0017'; Updated API summary a very high level preview of what the endpoint achieves and the description can explain it a bit further</td></tr><tr><td>1.1.3</td><td>2024-08-22</td><td>Updated an error message for code 'SER0006'</td></tr><tr><td>1.2.0</td><td>2024-11-04</td><td>Update all date-time field examples and remove 'milliseconds' component.; Update CRRServiceException by having an array of 'ErrorDetail' which contain severity, errorCode, and errorDescription; Add comments to description of CRRServiceException; Replace error code ATH0002 with SEC0001; Remove error codes that are not applicable to CRR message APIs; Update responses to have HTTP status codes 403, 404, and 500 with content of object CRRServiceException; Error code SER0028 is used for response 404 and error code SER0029 for response 500;</td></tr><tr><td>1.2.1</td><td>2024-11-21</td><td>Add error code SEC0002 for invalid participant name;</td></tr></table>
+  version: 1.2.1
+  title: CRR Message API
+  contact:
+    email: servicedesk@caiso.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: CRR Message Read
+    description: requires read only
+paths:
+  /messages/v1.0/public:
+    get:
+      tags:
+        - CRR Message Read
+      summary: Retrieves public messages
+      operationId: publicMessages
+      description: retrieve public messages by timestamp when messages were published between fromDate and toDate
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'
+        - in: query
+          name: fromDate
+          description: minimum date-time when public messages are published
+          required: true
+          schema:
+            type: string
+            format: date-time
+            example: '2021-10-01T07:00:00Z'
+        - in: query
+          name: toDate
+          description: maximum date-time when public messages are published
+          schema:
+            type: string
+            format: date-time
+            example: '2021-10-01T07:00:00Z'
+
+      responses:
+        '200':
+          description: public messages which are published between specified fromDate and toDate
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'               
+  /messages/v1.0/private:
+    get:
+      tags:
+        - CRR Message Read
+      summary: Retrieves private messages
+      operationId: privateMessages
+      description: retrieve private messages by given participant name and timestamp when messages were published between fromDate and toDate
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'           
+        - in: query
+          name: fromDate
+          description: minimum date-time when private messages are published
+          required: true
+          schema:
+            type: string
+            format: date-time
+            example: '2021-10-01T07:00:00Z'
+        - in: query
+          name: toDate
+          description: maximum date-time when private messages are published
+          schema:
+            type: string
+            format: date-time
+            example: '2021-10-01T07:00:00Z'
+
+
+      responses:
+        '200':
+          description: private messages for specified participant which were published between specified fromDate and toDate
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'           
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'               
+components:
+  parameters:
+    ParticipantName:
+      in: query
+      name: participantName
+      description: Market Participant Name
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 64
+      example: CISO
+    CAISORequestUUID:
+      in: header
+      name: caiso-request-id
+      description: An HTTP header with a unique UUID (Universal Unique Identifier) for every request
+      schema:
+        type: string
+        format: uuid
+      required: true
+      example: c9b09ec1-3a3a-4e68-a4d7-89aece526b05
+  schemas:
+    Message:
+      type: object
+      required:
+        - sentTime
+        - message
+      properties:
+        sentTime:
+          type: string
+          format: date-time
+          description: Timestamp when the message is published.
+          example: '2023-08-29T09:12:33Z'
+        sender:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: Name of the person who initiates the message.
+          maxLength: 100
+          example: 'System Operator'
+        message:
+          type: string
+          pattern: '^([a-zA-Z0-9\#\@\(\)\. _-]*)$'
+          description: message text
+          maxLength: 512
+          example: 'CRR Calendar for 2024'
+        attachmentName:
+          type: string
+          pattern: '^([a-zA-Z0-9\(\)\. _-]*)$'
+          description: attachment file name
+          maxLength: 50
+          example: 'CRR_Calendar_2024.docx'
+        attachment:
+          type: string
+          description: attachment file
+          format: binary
+    CRRServiceException:
+        description: |
+          <table>
+            <tr>
+              <th>Error Code</th>
+              <th>Description</th>
+              <th>Comment</th>
+            </tr>
+            <tr>
+              <td> SEC0001 </td>
+              <td> Access for Market Participant {0} is denied due to insufficient privilege. </td>
+              <td> Security Validation </td>
+            </tr>  
+            <tr>
+              <td> SEC0002 </td>
+              <td> Access Denied. Please contact your Local Security Administrator. </td>
+              <td> Security Validation</td>
+            </tr>             
+            <tr>
+             <td>SER0001</td>
+             <td>Please report the issue and provide the API access parameters to CAISO.</td>
+             <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0006</td>
+              <td>ToDate must be later than the FromDate.</td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0007</td>
+              <td>Unable to find any message between the fromDate and the toDate.</td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td>SER0017</td>
+              <td>Invalid request "{0}".</td>
+              <td> Service and Business validation </td>
+            </tr>            
+            <tr>
+              <td> SER0028 </td>
+              <td> Internal Service Error </td>
+              <td> Service and Business validation for response in 500</td>
+            </tr>
+            <tr>
+              <td> SER0029</td>
+              <td> Cannot find a resource </td>
+              <td> Service and Business validation for response in 404</td>
+            </tr>             
+            <tr>
+              <td> SER0030 </td>
+              <td> {0}</td>
+              <td> Service and Business validation. Error from other generic data validations or error in the individual record in the body </td>
+            </tr>
+          </table>
+        type: object
+        required:
+          - errorList
+          - creationTime
+  
+        properties:
+          errorList:
+            type: array
+            items:
+              $ref: '#/components/schemas/ErrorDetail'
+          creationTime:
+            type: string
+            description: date and time when the error is issued.
+            format: date-time
+            example: '2099-07-04T09:12:33Z'
+          serviceVersion:
+            type: string
+            description: version of service
+            maxLength: 10
+            example: 'V1.0'
+    ErrorDetail:
+      type: object
+      required:
+        - errorCode
+        - errorDescription
+        - severity
+
+      properties:  
+          errorDescription:
+            type: string
+            description: "JSON syntax error, error in the input parameter of the request (such as the object identifier does not exist), generic data validation (such as the submission window is not open), or error in the individual record"
+            maxLength: 1000
+            example: "Error description."
+          errorCode:
+            type: string
+            description: error code
+            maxLength: 15
+            example: 'XXX0000'
+          severity:
+            type: string
+            enum:
+              - FATAL
+              - ERROR

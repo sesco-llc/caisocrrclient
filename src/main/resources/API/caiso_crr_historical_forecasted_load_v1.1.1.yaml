@@ -1,0 +1,841 @@
+openapi: 3.0.0
+info:
+  description: OpenAPI allows CRR Historical/Forecasted Load upload and load submission window status and download.\n <table><tr><td>OpenAPI Spec Revision</td><td>Date</td><td>Change Log</td></tr><tr><td>1.0.0</td><td>2024-01-10</td><td>Initial Version</td></tr><tr><td>1.0.1</td><td>2024-06-12</td><td>Fixed typographical errors</td></tr><tr><td>1.0.2</td><td>2024-07-22</td><td>Added an error code 'SER0017'; Updated API summary a very high level preview of what the endpoint achieves and the description can explain it a bit further</td></tr><tr><td>1.0.3</td><td>2024-09-04</td><td>Added Error codes LHFV0030 to specification</td></tr><tr><td>1.0.4</td><td>2024-10-02</td><td>Remove PUMP_LOAD from enum of LoadType because it is not used.</td></tr><tr><td>1.1.0</td><td>2024-11-04</td><td>Fixed a typographical error which changed 'submissionWindowStatus' to 'submissionWindow' in 'LoadSubmissionWindow' model; Correct format from dateTime to date-time and update date examples by removing 'milliseconds' component.; Remove maxLength from effectiveDate which in date-time; Add loadSubmissionStatus to 'LoadDataResponseSet'; update description to elaborate when error status occurs in 'SubmissionStatus' and 'Status'; Remove PREP from enum of 'LoadSubmissionWindowStatus'; Rename services from activeHistLoadSubmissionWindow and activeForecastLoadSubmissionWindow to 'openHistLoadSubmissionWindow' and 'openForcastLoadSubmissionWindow'; Update CRRServiceException by having an array of 'ErrorDetail' which contain severity, errorCode, and errorDescription; Remove error code LHFV0032 because it is a duplicate of SER0002; Add error code SER0030 for error from other generic data validations or error in the individual record in the body; Update responses to have HTTP status codes 403, 404, and 500 with content of object CRRServiceException; Error code SER0028 is used for response 404 and error code SER0029 for response 500;</td></tr><tr><td>1.1.1</td><td>2024-11-21</td><td>Add error code SEC0002 for invalid participant name;</td></tr></table>
+  version: 1.1.1
+  title: CRR Historical and Forecasted Load API
+  contact:
+    email: servicedesk@caiso.com
+servers:
+  - description: Mapstage Server Endpoint
+    url: https://mapstage-api.caiso.com/crr
+    
+tags:
+  - name: CRR Historical and Forecasted Load Write
+    description: require read/write access
+  - name: CRR Historical and Forecasted Load Read
+    description: requires read only
+paths:
+  /historicalforecastedload/v1.0/loadSubmissionWindowStatus:
+    get:
+      tags:
+        - CRR Historical and Forecasted Load Read
+      summary: Gets status of a load submission window
+      operationId: getLoadSubmissionWindowStatus
+      description: gets status of the load submission window by given load submission window name for authorized market participant
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/LoadSubmissionWindowName'
+        - $ref: '#/components/parameters/ParticipantName'     
+      responses:
+        '200':
+          description: information of load submission window which includes name, historical/forecasted flag, annual/monthly term, submission window, applicable periods and its status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoadSubmissionWindow'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'               
+  /historicalforecastedload/v1.0/openHistLoadSubmissionWindow:
+    get:
+      tags:
+        - CRR Historical and Forecasted Load Read
+      summary: Gets a list of historical load submission windows which are open for posting historical load data
+      operationId: getOpenHistoricalLoadSubmissionWindowList
+      description: gets a list of the historical load submission windows that are open for authorized market participant to posting historical load data
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'           
+      responses:
+        '200':
+          description: an array of load submission window
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoadSubmissionWindow'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'               
+  /historicalforecastedload/v1.0/openForecastLoadSubmissionWindow:
+    get:
+      tags:
+        - CRR Historical and Forecasted Load Read
+      summary: Gets a list of forecasted load submission windows which are open for posting forcasted load data
+      operationId: getOpenForecastLoadSubmissionWindowList
+      description: gets a list of the forecasted load submission windows that are open for authorized market participant to posting forecasted load data
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'               
+      responses:
+        '200':
+          description: an array of load submission window
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoadSubmissionWindow'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'             
+  /historicalforecastedload/v1.0/closedHistLoadSubmissionWindow:
+    get:
+      tags:
+        - CRR Historical and Forecasted Load Read
+      summary: Gets a list of closed historical load submission windows
+      operationId: getClosedHistLoadSubmissionWindowList
+      description: gets a list of the historical load submission windows that have been closed for authorized market participant
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'               
+      responses:
+        '200':
+          description: an array of load submission window
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoadSubmissionWindow'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'                
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'               
+  /historicalforecastedload/v1.0/closedForecastLoadSubmissionWindow:
+    get:
+      tags:
+        - CRR Historical and Forecasted Load Read
+      summary: Gets a list of closed forecasted load submission windows
+      operationId: getClosedForecastLoadSubmissionWindowList
+      description: gets a list of the forecasted load submission windows that have been closed for authorized market participant
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/ParticipantName'               
+      responses:
+        '200':
+          description: an array of load submission window
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoadSubmissionWindow'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'  
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'            
+  /historicalforecastedload/v1.0/loadData:
+    get:
+      tags:
+        - CRR Historical and Forecasted Load Read
+      summary: Gets load data from given load submission window
+      operationId: getLoadData
+      description: gets load data uploaded to the given load submission window, period, and participant name
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/LoadSubmissionWindowName'
+        - $ref: '#/components/parameters/PeriodName'
+        - $ref: '#/components/parameters/ParticipantName'        
+      responses:
+        '200':
+          description: Load Data submitted to the given period of the load submission window by participant
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoadDataResponseSet'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'               
+  /historicalforecastedload/v1.0/loadSubmission:
+    post:
+      tags:
+        - CRR Historical and Forecasted Load Write
+      summary: Uploads load data to a submission window
+      operationId: postLoadSubmission
+      description: uploads load data to the given period of the specified load submission window by the logged-in user
+      parameters: 
+        - $ref: '#/components/parameters/CAISORequestUUID'
+      responses:
+        '200':
+          description: load submission status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoadSubmissionStatus'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'     
+      requestBody:
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/LoadDataSet'
+  /historicalforecastedload/v1.0/loadExceedanceValues:
+    get:
+      tags:
+        - CRR Historical and Forecasted Load Read
+      summary: Gets exceedance values calculated from load data
+      operationId: getLoadExceedanceValues
+      description: gets exceedance values calculated from load data uploaded to the given load submission window, period, and participant name
+      parameters:
+        - $ref: '#/components/parameters/CAISORequestUUID'
+        - $ref: '#/components/parameters/LoadSubmissionWindowName'
+        - $ref: '#/components/parameters/PeriodName'
+        - $ref: '#/components/parameters/ParticipantName'        
+      responses:
+        '200':
+          description: Exceedance values calculated from load Data submitted to the given period of the load submission window by participant
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LoadExceedanceSet'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'  
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException' 
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'              
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CRRServiceException'               
+components:
+  parameters:
+    LoadSubmissionWindowName:
+      in: query
+      name: loadSubmissionWindowName
+      description: The name of the load submission window
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 40
+    PeriodName:
+      in: query
+      name: periodName
+      description: Name of effective period for the load
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 10
+      example: '2024_S01'
+    ParticipantName:
+      in: query
+      name: participantName
+      description: Market Participant Name
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z0-9\. _-]*)$'
+        maxLength: 64
+      example: 'CISO'
+    CAISORequestUUID:
+      in: header
+      name: caiso-request-id
+      description: An HTTP header with a unique UUID (Universal Unique Identifier) for every request
+      schema:
+        type: string
+        format: uuid
+      required: true
+      example: c9b09ec1-3a3a-4e68-a4d7-89aece526b05
+  
+  schemas:
+    CRRServiceException:
+        description: |
+          <table>
+            <tr>
+              <th>Error Code</th>
+              <th>Description</th>
+              <th>Comment</th>
+            </tr>
+            <tr>
+              <td> LHFV0026 </td>
+              <td> Load Type value in record {0} is invalid. Only FINAL_LOAD is allowed for non MSS users. </td>
+              <td> Load Submission validation </td>
+            </tr>
+            <tr>
+              <td> LHFV0030 </td>
+              <td> Invalid submission window {0}. </td>
+              <td> Load Submission validation </td>
+            </tr>
+            <tr>
+              <td> LHFV0031 </td>
+              <td> Invalid period {0}. </td>
+              <td> Load Submission validation </td>
+            </tr>
+            <tr>
+              <td> LHFV0033 </td>
+              <td> Invalid Portfolio status or not eligible to submit for {0} and period = {1}. </td>
+              <td> Load Submission validation </td>
+            </tr>
+            <tr>
+              <td> SEC0001 </td>
+              <td> Access for Market Participant {0} is denied due to insufficient privilege. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SEC0002 </td>
+              <td> Access Denied. Please contact your Local Security Administrator. </td>
+              <td> Security Validation</td>
+            </tr>            
+            <tr>
+              <td> SER0001 </td>
+              <td> Please report the issue and provide the API access parameters to CAISO. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0002 </td>
+              <td> Invalid participant name {0}. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0017 </td>
+              <td> Invalid request "{0}". </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0022 </td>
+              <td> Portfolio name can contain alphanumeric or alphanumeric with one or more space, underscore, hyphen and dot. </td>
+              <td> Service and Business validation </td>
+            </tr>
+            <tr>
+              <td> SER0028 </td>
+              <td> Internal Service Error </td>
+              <td> Service and Business validation for response in 500</td>
+            </tr>
+            <tr>
+              <td> SER0029</td>
+              <td> Cannot find a resource </td>
+              <td> Service and Business validation for response in 404</td>
+            </tr>            
+            <tr>
+              <td> SER0030 </td>
+              <td> {0}</td>
+              <td> Service and Business validation. Error from other generic data validations or error in the individual record in the body </td>
+            </tr>
+          </table>
+        type: object
+        required:
+          - errorList
+          - creationTime
+  
+        properties:
+          errorList:
+            type: array
+            items:
+              $ref: '#/components/schemas/ErrorDetail'
+          creationTime:
+            type: string
+            description: date and time when the error is issued.
+            format: date-time
+            example: '2099-07-04T09:12:33Z'
+          serviceVersion:
+            type: string
+            description: version of service
+            maxLength: 10
+            example: 'V1.0'
+    LoadSubmissionWindowStatus:
+      type: string
+      description: OPEN is the status of a load submission window that allows the load data to be submitted. CLOSED is the status of a load submission window that is before the open date or after the close date of the submission period.
+      enum:
+        - OPEN
+        - CLOSED
+    MarketTerm:
+      type: string
+      description: MONTHLY market term is for a load submission for a monthly period. ANNUAL market term is for a load submission for seasonal periods.
+      enum:
+        - MONTHLY
+        - ANNUAL        
+    historicalforecastedloadFlag:
+      type: string
+      description: H - Historical; F - Forecasted;
+      enum:
+        - H
+        - F
+    Period:
+      type: object
+      required:
+        - name
+        - startDate
+        - endDate
+      properties:
+        name:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of seasonal or monthly effective period
+          maxLength: 20
+          example: '2021_M09'
+        startDate:
+          type: string
+          maxLength: 24
+          description: start date of effective period
+          format: date-time
+          example: '2021-09-01T07:00:00Z'        
+        endDate:
+          type: string
+          maxLength: 24
+          description: end date of effective period
+          format: date-time
+          example: '2021-10-01T07:00:00Z' 
+    ErrorDetail:
+      type: object
+      required:
+        - errorCode
+        - errorDescription
+        - severity
+
+      properties:  
+          errorDescription:
+            type: string
+            description: "JSON syntax error, error in the input parameter of the request (such as the object identifier does not exist), generic data validation (such as the submission window is not open), or error in the individual record"
+            maxLength: 1000
+            example: "Error description."
+          errorCode:
+            type: string
+            description: error code
+            maxLength: 15
+            example: 'XXX0000'
+          severity:
+            type: string
+            enum:
+              - FATAL
+              - ERROR           
+    Megawatt:
+      type: number
+      multipleOf: 0.001
+      minimum: 0
+      description: quantity unit of load
+      pattern: '[\-+]?[\d]+\.?\d?\d?\d?'
+      format: double
+      example: 0.001           
+    LoadType:
+      type: string
+      description: FINAL_LOAD is the load type designated for the load metric calculation. GROSS_LOAD and GROSS_GENERATION are used by Metered Subsystems that choose net settlement.
+      enum:
+        - FINAL_LOAD
+        - GROSS_LOAD
+        - GROSS_GENERATION
+    CRRTimeOfUse:
+      type: string
+      description: Time-of-Use
+      enum:
+        - OFF
+        - ON
+    SubmissionWindow:
+      type: object
+      required:
+        - openDate
+        - closeDate
+      properties:
+        openDate:
+          type: string
+          description: date and time when the submission window is open
+          format: date-time
+          example: '2021-09-01T07:00:00Z'        
+        closeDate:
+          type: string
+          description: date and time when the submission window is closed
+          format: date-time
+          example: '2021-10-01T07:00:00Z'         
+    SubmissionStatus:
+      type: string
+      description: VALID means all hourly load values are valid and load submission is successful. ERROR means hourly load values fail data validations which can occur only to forecasted load submitted before the CEC load is adjusted to be lower.
+      enum:
+        - VALID
+        - ERROR
+    LoadSubmissionWindow:
+      type: object
+      required:
+        - name
+        - histForecastFlag     
+        - term
+        - submissionWindow
+        - periods
+        - windowStatus
+      properties:
+        name:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of load submission window
+        histForecastFlag:
+          $ref: '#/components/schemas/historicalforecastedloadFlag'           
+        term:
+          $ref: '#/components/schemas/MarketTerm'
+        submissionWindow:
+          $ref: '#/components/schemas/SubmissionWindow'
+        periods:
+          type: array
+          description: a list of effective periods for the load submission window
+          minItems: 1
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/Period'        
+        windowStatus:
+          $ref: '#/components/schemas/LoadSubmissionWindowStatus'
+    LoadSubmissionStatus:
+      type: object
+      required:
+        - status
+        - submissionTime
+      properties:
+        status:
+          $ref: '#/components/schemas/SubmissionStatus'
+        submissionTime:
+          type: string
+          description: date and time when the load is submitted by market participant
+          maxLength: 24
+          format: date-time
+          example: '2023-01-01T09:12:33Z'          
+        errorMessages:
+          type: string
+          maxLength:  2147483647
+          description: error message of forecasted load submitted by LSE before the CEC adjusts the load to be lower. The error status and error message are generated after the CEC load adjustment.
+          example: '["For the date = 06/01/2024 and hour = 1, MP1 has uploaded the load for Sink1 in the total MW = 273.561 which exceeds CEC load of 238.357 MW by more than 5 percent tolerance.","For the date = 06/01/2024 and hour = 2, MP1 has uploaded the load for Sink1 in the total MW = 280.561 which exceeds CEC load of 238.357 MW by more than 5 percent tolerance."]'
+    HourlyLoadRecord:
+      type: object
+      required:
+        - sinkName
+        - effectiveDate
+        - hourEnding
+        - dataType
+        - mw
+      properties:
+        sinkName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: load name
+          maxLength: 150
+        effectiveDate:
+          type: string
+          description: effective date for the load
+          format: date-time
+          example: '2023-01-01T09:12:33Z'
+        hourEnding:
+          type: integer
+          description: effective ending hour of the load
+          minimum: 1
+          maximum: 25
+        dataType:
+          $ref: '#/components/schemas/LoadType'
+        mw:
+          $ref: '#/components/schemas/Megawatt'
+    HourlyLoadResponseRecord:
+      type: object
+      required:
+        - sinkName
+        - effectiveDate
+        - hourEnding
+        - dataType
+        - mw
+        - timeOfUse
+      properties:
+        sinkName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: load name
+          maxLength: 150
+        effectiveDate:
+          type: string
+          description: effective date for the load
+          format: date-time
+          example: '2023-01-01T09:12:33Z'
+        hourEnding:
+          type: integer
+          description: effective ending hour of the load
+          minimum: 1
+          maximum: 25
+        dataType:
+          $ref: '#/components/schemas/LoadType'           
+        mw:
+          $ref: '#/components/schemas/Megawatt'
+        timeOfUse:
+          $ref: '#/components/schemas/CRRTimeOfUse'
+    LoadExceedance:
+      type: object
+      required:
+        - sinkName
+        - maxMW
+        - exceedance
+        - timeOfUse
+      properties:
+        sinkName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: load name
+          maxLength: 150         
+        maxMW:
+          $ref: '#/components/schemas/Megawatt'              
+        exceedance:
+          $ref: '#/components/schemas/Megawatt'
+        timeOfUse:
+          $ref: '#/components/schemas/CRRTimeOfUse'
+    LoadDataSet:
+      type: object
+      required:
+        - histForecastFlag
+        - assetOwner
+        - loadSubmissionWindowName
+        - periodName
+        - hourlyLoad
+      properties: 
+        histForecastFlag:
+          $ref: '#/components/schemas/historicalforecastedloadFlag'     
+        assetOwner:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of CRR asset owner which is SC ID
+          maxLength: 64
+          example: 'CISO'
+        loadSubmissionWindowName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: Name of load submission window
+          maxLength: 40
+          example: HIST_LOAD_2021
+        periodName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: Name of effective period of load submission window
+          maxLength: 20
+          example: 2021_S01
+        hourlyLoad:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/HourlyLoadRecord'
+    LoadDataResponseSet:
+      type: object
+      required:
+        - histForecastFlag
+        - assetOwner
+        - loadSubmissionWindowName
+        - loadSubmissionStatus
+        - periodName
+        - hourlyLoad
+      properties:
+        histForecastFlag:
+          $ref: '#/components/schemas/historicalforecastedloadFlag'
+        assetOwner:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: name of CRR asset owner which is SC ID
+          maxLength: 64
+          example: 'CISO'
+        loadSubmissionWindowName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: Name of load submission window
+          maxLength: 40
+          example: HIST_LOAD_2021
+        periodName:
+          type: string
+          pattern: '^([a-zA-Z0-9\. _-]*)$'
+          description: Name of effective period of load submission window
+          maxLength: 20
+          example: 2021_S01
+        hourlyLoad:
+          type: array
+          description: a list of hourly load for specified sink, date, ending hour, and TOU
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/HourlyLoadResponseRecord'
+        loadSubmissionStatus:
+            $ref: '#/components/schemas/LoadSubmissionStatus'        
+    LoadExceedanceSet:
+      type: object
+      required:
+        - loadExceedance
+        - lastCalculation
+      properties:
+        loadExceedance:
+          type: array
+          description: a list of load exceedance per sink and TOU
+          items:
+            $ref: '#/components/schemas/LoadExceedance'             
+        lastCalculation:
+          type: string
+          format: date-time
+          description: date and time when the load exceedance is calculated.
+          example: '2022-07-04T09:12:33Z'
