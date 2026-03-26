@@ -1,8 +1,8 @@
 package com.sesco.caiso.crr.download;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.sesco.caiso.crr.model.Auction;
 import com.sesco.caiso.crr.model.Errors;
+import com.sesco.caiso.crr.model.download.Auction;
 import com.sesco.caiso.crr.util.ClientUtil;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;

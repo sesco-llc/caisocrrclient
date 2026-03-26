@@ -2,7 +2,7 @@ package com.sesco.caiso.crr.download;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.sesco.caiso.crr.model.Errors;
-import com.sesco.caiso.crr.model.SourceSink;
+import com.sesco.caiso.crr.model.download.SourceSink;
 import com.sesco.caiso.crr.util.ClientUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
