@@ -9,6 +9,7 @@ import com.sesco.caiso.crr.util.ClientUtil;
 import com.sesco.dom.dome.dome_HourType;
 import com.sesco.maps.maps_FTRMarkets;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
@@ -306,6 +307,35 @@ public class CaisoCRRAuctionClient {
             submissionRetractionRequest.setPortfolioName(portfolioName);
             httpPost.setEntity(new StringEntity(ClientUtil.mapper.writeValueAsString(submissionRetractionRequest)));
             CloseableHttpResponse resp = httpclient.execute(httpPost);
+            if (resp.getStatusLine().getStatusCode() == 200) {
+                if (resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                    throw new Exception(EntityUtils.toString(resp.getEntity()));
+                }
+                return ClientUtil.mapper.readValue(EntityUtils.toString(resp.getEntity()), PortfolioStatus.class);
+            } else {
+                String s = EntityUtils.toString(resp.getEntity());
+                if (!s.isEmpty()) {
+                    Errors f = ClientUtil.mapper.readValue(s, Errors.class);
+                    throw new Exception(f.getErrorList().get(0).getErrorDescription());
+                } else {
+                    throw new Exception("No Results returned");
+                }
+            }
+        }
+    }
+
+    public PortfolioStatus deletePortfolio(String marketName, String portfolioName) throws Exception {
+        URI uri = new URIBuilder(d_baseURL + "/auction/v1.0/portfolioRetraction")
+                .addParameter("marketName", marketName)
+                .addParameter("participantName", d_schedulingCoordinator)
+                .addParameter("portfolioName", portfolioName)
+                .build();
+
+        HttpDelete httpDelete = new HttpDelete(uri);
+        try (CloseableHttpClient httpclient = ClientUtil.getClientBuilder(d_certName, d_certPassword).build()) {
+            ClientUtil.addHeaders(httpDelete, "application/json", "application/json");
+
+            CloseableHttpResponse resp = httpclient.execute(httpDelete);
             if (resp.getStatusLine().getStatusCode() == 200) {
                 if (resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
                     throw new Exception(EntityUtils.toString(resp.getEntity()));
