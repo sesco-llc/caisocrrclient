@@ -178,7 +178,7 @@ public class CaisoCRRAuctionClient {
         request.setParticipantName(d_schedulingCoordinator);
         Map<Boolean, List<bot_FTRSubmission>> customMap = submissions.stream()
                 .collect(Collectors.groupingBy(
-                        bot_FTRSubmission::isBidCurve) // Downstream collector (e.g., use LinkedList for values)
+                        bot_FTRSubmission::isBidCurve)
                 );
         List<bot_FTRSubmission> bidList  = customMap.get(true);
         List<bot_FTRSubmission> offerList  = customMap.get(false);
@@ -325,7 +325,7 @@ public class CaisoCRRAuctionClient {
     }
 
     public PortfolioStatus deletePortfolio(String marketName, String portfolioName) throws Exception {
-        URI uri = new URIBuilder(d_baseURL + "/auction/v1.0/portfolioRetraction")
+        URI uri = new URIBuilder(d_baseURL + "/auction/v1.0/portfolio")
                 .addParameter("marketName", marketName)
                 .addParameter("participantName", d_schedulingCoordinator)
                 .addParameter("portfolioName", portfolioName)
