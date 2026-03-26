@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-public class CRRDownloadClient {
+public class CaisoCRRDownloadClient {
     String d_certName;
     String d_certPassword;
     String d_baseURL = "https://api.caiso.com/crr";
@@ -30,7 +30,7 @@ public class CRRDownloadClient {
 
 
 
-    public CRRDownloadClient(String certName, String certPassword, String baseURL, String schedulingCoordinator) {
+    public CaisoCRRDownloadClient(String certName, String certPassword, String baseURL, String schedulingCoordinator) {
         d_certName = certName;
         d_certPassword = certPassword;
         d_baseURL = baseURL;
@@ -190,7 +190,7 @@ public class CRRDownloadClient {
         //CaisoSCALapi_11_25_26.pfx
         //CaisoWCALapi_11_26_26.pfx
         //CaisoYCALapi_11_26_26.pfx
-        CRRDownloadClient client = new CRRDownloadClient(
+        CaisoCRRDownloadClient client = new CaisoCRRDownloadClient(
                 "/sesco/certs/CaisoWCALapi_11_26_26.pfx",
                 "Solomon01",
                 "https://api.caiso.com/crr",
