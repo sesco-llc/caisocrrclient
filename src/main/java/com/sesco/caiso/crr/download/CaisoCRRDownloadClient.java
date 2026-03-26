@@ -29,7 +29,6 @@ public class CaisoCRRDownloadClient {
     String d_schedulingCoordinator;
 
 
-
     public CaisoCRRDownloadClient(String certName, String certPassword, String baseURL, String schedulingCoordinator) {
         d_certName = certName;
         d_certPassword = certPassword;
@@ -37,7 +36,7 @@ public class CaisoCRRDownloadClient {
         d_schedulingCoordinator = schedulingCoordinator;
     }
 
-    public void getPublicAuctionResult(String marketName, String directoryName)throws Exception{
+    public void getPublicAuctionResult(String marketName, String directoryName) throws Exception {
         URI uri = new URIBuilder(d_baseURL + "/marketdata/v1.0/publicAuctionResult")
                 .addParameter("marketName", marketName)
                 .addParameter("fileFormat", "CSV")
@@ -49,7 +48,7 @@ public class CaisoCRRDownloadClient {
             ClientUtil.addHeaders(httpget, "application/json", "application/octet-stream");
             CloseableHttpResponse resp = httpclient.execute(httpget);
             if (resp.getStatusLine().getStatusCode() == 200) {
-                if(resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                if (resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
                     throw new Exception(EntityUtils.toString(resp.getEntity()));
                 }
                 byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
@@ -71,7 +70,8 @@ public class CaisoCRRDownloadClient {
             }
         }
     }
-    public void getPrivateAuctionResult(String marketName, String directoryName)throws Exception{
+
+    public void getPrivateAuctionResult(String marketName, String directoryName) throws Exception {
         URI uri = new URIBuilder(d_baseURL + "/marketdata/v1.0/privateAuctionResult")
                 .addParameter("marketName", marketName)
                 .addParameter("fileFormat", "CSV")
@@ -83,7 +83,7 @@ public class CaisoCRRDownloadClient {
             ClientUtil.addHeaders(httpget, "application/json", "application/octet-stream");
             CloseableHttpResponse resp = httpclient.execute(httpget);
             if (resp.getStatusLine().getStatusCode() == 200) {
-                if(resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                if (resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
                     throw new Exception(EntityUtils.toString(resp.getEntity()));
                 }
                 byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
@@ -105,7 +105,7 @@ public class CaisoCRRDownloadClient {
         }
     }
 
-    public void geClearingPriceResult(String marketName, String directoryName)throws Exception{
+    public void geClearingPriceResult(String marketName, String directoryName) throws Exception {
         URI uri = new URIBuilder(d_baseURL + "/marketdata/v1.0/publicAuctionResult")
                 .addParameter("marketName", marketName)
                 .addParameter("fileFormat", "CSV")
@@ -117,7 +117,7 @@ public class CaisoCRRDownloadClient {
             ClientUtil.addHeaders(httpget, "application/json", "application/octet-stream");
             CloseableHttpResponse resp = httpclient.execute(httpget);
             if (resp.getStatusLine().getStatusCode() == 200) {
-                if(resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                if (resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
                     throw new Exception(EntityUtils.toString(resp.getEntity()));
                 }
                 byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
@@ -153,7 +153,7 @@ public class CaisoCRRDownloadClient {
             ClientUtil.addHeaders(httpget, "application/json", "application/octet-stream");
             CloseableHttpResponse resp = httpclient.execute(httpget);
             if (resp.getStatusLine().getStatusCode() == 200) {
-                if(resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                if (resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
                     throw new Exception(EntityUtils.toString(resp.getEntity()));
                 }
                 byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
@@ -180,7 +180,8 @@ public class CaisoCRRDownloadClient {
                         System.out.println("File not found in the archive.");
                     }
                 }
-                return ClientUtil.mapper.readValue(stb.toString(), new TypeReference<List<SourceSink>>() {});
+                return ClientUtil.mapper.readValue(stb.toString(), new TypeReference<List<SourceSink>>() {
+                });
             } else {
                 String s = EntityUtils.toString(resp.getEntity());
                 if (!s.isEmpty()) {

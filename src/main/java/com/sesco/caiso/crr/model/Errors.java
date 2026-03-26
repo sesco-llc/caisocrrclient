@@ -41,8 +41,8 @@ public class Errors {
 
     public static void main(String[] args) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-       Errors f = mapper.readValue("{\"errorList\":[{\"errorDescription\":\"Access Denied. Please contact your Local Security Administrator.\",\"errorCode\":\"SEC0002\",\"severity\":\"ERROR\"}],\"creationTime\":\"2026-03-26T12:20:22Z\",\"serviceVersion\":\"V1.0\"}",
-               Errors.class);
+        Errors f = mapper.readValue("{\"errorList\":[{\"errorDescription\":\"Access Denied. Please contact your Local Security Administrator.\",\"errorCode\":\"SEC0002\",\"severity\":\"ERROR\"}],\"creationTime\":\"2026-03-26T12:20:22Z\",\"serviceVersion\":\"V1.0\"}",
+                Errors.class);
         System.out.println(f);
     }
 }

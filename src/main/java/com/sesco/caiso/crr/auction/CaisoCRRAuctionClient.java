@@ -26,7 +26,7 @@ public class CaisoCRRAuctionClient {
         d_schedulingCoordinator = schedulingCoordinator;
     }
 
-    public List<Portfolio>  getPortfolioList(String marketName) throws Exception{
+    public List<Portfolio> getPortfolioList(String marketName) throws Exception {
         URI uri = new URIBuilder(d_baseURL + "/auction/v1.0/portfolioList")
                 .addParameter("marketName", marketName)
                 .addParameter("participantName", d_schedulingCoordinator)
@@ -37,10 +37,11 @@ public class CaisoCRRAuctionClient {
             ClientUtil.addHeaders(httpget, "application/json", "application/json");
             CloseableHttpResponse resp = httpclient.execute(httpget);
             if (resp.getStatusLine().getStatusCode() == 200) {
-                if(resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                if (resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
                     throw new Exception(EntityUtils.toString(resp.getEntity()));
                 }
-                return ClientUtil.mapper.readValue(EntityUtils.toString(resp.getEntity()), new TypeReference<List<Portfolio>>() {});
+                return ClientUtil.mapper.readValue(EntityUtils.toString(resp.getEntity()), new TypeReference<List<Portfolio>>() {
+                });
             } else {
                 String s = EntityUtils.toString(resp.getEntity());
                 if (!s.isEmpty()) {
@@ -53,7 +54,7 @@ public class CaisoCRRAuctionClient {
         }
     }
 
-    public Portfolio  getPortfolio(String marketName, String portfolioName) throws Exception{
+    public Portfolio getPortfolio(String marketName, String portfolioName) throws Exception {
         URI uri = new URIBuilder(d_baseURL + "/auction/v1.0/portfolio")
                 .addParameter("marketName", marketName)
                 .addParameter("participantName", d_schedulingCoordinator)
@@ -65,7 +66,7 @@ public class CaisoCRRAuctionClient {
             ClientUtil.addHeaders(httpget, "application/json", "application/json");
             CloseableHttpResponse resp = httpclient.execute(httpget);
             if (resp.getStatusLine().getStatusCode() == 200) {
-                if(resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                if (resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
                     throw new Exception(EntityUtils.toString(resp.getEntity()));
                 }
                 return ClientUtil.mapper.readValue(EntityUtils.toString(resp.getEntity()), Portfolio.class);
@@ -95,7 +96,7 @@ public class CaisoCRRAuctionClient {
 
 //        List<Portfolio> p = client.getPortfolioList("AUC_MN_2026_M03");
         Portfolio p = client.getPortfolio("AUC_MN_2026_M03", "March MNTHLY 26");
-        System.out.println("Active Pot:" +p);
+        System.out.println("Active Pot:" + p);
         //March MNTHLY 26
 
     }

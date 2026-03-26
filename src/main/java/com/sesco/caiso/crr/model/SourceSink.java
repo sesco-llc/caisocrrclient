@@ -123,7 +123,8 @@ public class SourceSink {
                                               "    \"ParticipationFactor\": 0.003,\n" +
                                               "    \"TOU\": \"OFF\"\n" +
                                               "  }\n" +
-                                              "]", new TypeReference<List<SourceSink>>(){});
+                                              "]", new TypeReference<List<SourceSink>>() {
+        });
         System.out.println(f);
     }
 }

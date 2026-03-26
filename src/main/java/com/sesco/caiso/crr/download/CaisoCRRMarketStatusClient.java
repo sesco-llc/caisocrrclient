@@ -20,7 +20,6 @@ public class CaisoCRRMarketStatusClient {
     String d_schedulingCoordinator;
 
 
-
     public CaisoCRRMarketStatusClient(String certName, String certPassword, String baseURL, String schedulingCoordinator) {
         d_certName = certName;
         d_certPassword = certPassword;
@@ -28,7 +27,7 @@ public class CaisoCRRMarketStatusClient {
         d_schedulingCoordinator = schedulingCoordinator;
     }
 
-    public List<Auction> getActiveMarkets() throws Exception{
+    public List<Auction> getActiveMarkets() throws Exception {
         URI uri = new URIBuilder(d_baseURL + "/marketstatus/v1.0/postedAuctionMarkets")
                 .addParameter("participantName", d_schedulingCoordinator)
                 .build();
@@ -38,10 +37,11 @@ public class CaisoCRRMarketStatusClient {
             ClientUtil.addHeaders(httpget, "application/json", "application/json");
             CloseableHttpResponse resp = httpclient.execute(httpget);
             if (resp.getStatusLine().getStatusCode() == 200) {
-                if(resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                if (resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
                     throw new Exception(EntityUtils.toString(resp.getEntity()));
                 }
-                return ClientUtil.mapper.readValue(EntityUtils.toString(resp.getEntity()), new TypeReference<List<Auction>>() {});
+                return ClientUtil.mapper.readValue(EntityUtils.toString(resp.getEntity()), new TypeReference<List<Auction>>() {
+                });
             } else {
                 String s = EntityUtils.toString(resp.getEntity());
                 if (!s.isEmpty()) {
@@ -53,7 +53,6 @@ public class CaisoCRRMarketStatusClient {
             }
         }
     }
-
 
 
     public static void main(String[] args) throws Exception {
@@ -69,7 +68,7 @@ public class CaisoCRRMarketStatusClient {
                 "WCAL");
 
         List<Auction> a = client.getActiveMarkets();
-        System.out.println("Active Markets:" +a);
+        System.out.println("Active Markets:" + a);
 
     }
 

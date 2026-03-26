@@ -1,4 +1,3 @@
-
 package com.sesco.caiso.crr.model.auction;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -9,16 +8,16 @@ import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "bidId",
-    "assetOwner",
-    "source",
-    "sink",
-    "hedgeType",
-    "tou",
-    "period",
-    "crrType",
-    "bidCurve",
-    "description"
+        "bidId",
+        "assetOwner",
+        "source",
+        "sink",
+        "hedgeType",
+        "tou",
+        "period",
+        "crrType",
+        "bidCurve",
+        "description"
 })
 public class Bid {
 

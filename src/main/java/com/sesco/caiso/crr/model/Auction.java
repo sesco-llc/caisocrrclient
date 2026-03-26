@@ -1,4 +1,3 @@
-
 package com.sesco.caiso.crr.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -9,12 +8,12 @@ import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "name",
-    "marketType",
-    "marketTerm",
-    "dataPublishDate",
-    "submissionWindow",
-    "products"
+        "name",
+        "marketType",
+        "marketTerm",
+        "dataPublishDate",
+        "submissionWindow",
+        "products"
 })
 public class Auction {
 
