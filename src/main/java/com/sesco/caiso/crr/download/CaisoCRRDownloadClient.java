@@ -49,6 +49,9 @@ public class CaisoCRRDownloadClient {
             ClientUtil.addHeaders(httpget, "application/json", "application/octet-stream");
             CloseableHttpResponse resp = httpclient.execute(httpget);
             if (resp.getStatusLine().getStatusCode() == 200) {
+                if(resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                    throw new Exception(EntityUtils.toString(resp.getEntity()));
+                }
                 byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
                 File f = new File(directoryName);
                 if (!f.exists()) {
@@ -80,7 +83,7 @@ public class CaisoCRRDownloadClient {
             ClientUtil.addHeaders(httpget, "application/json", "application/octet-stream");
             CloseableHttpResponse resp = httpclient.execute(httpget);
             if (resp.getStatusLine().getStatusCode() == 200) {
-                if(resp.getFirstHeader("Content-Type").getValue().equals("text/html")) {
+                if(resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
                     throw new Exception(EntityUtils.toString(resp.getEntity()));
                 }
                 byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
@@ -114,6 +117,9 @@ public class CaisoCRRDownloadClient {
             ClientUtil.addHeaders(httpget, "application/json", "application/octet-stream");
             CloseableHttpResponse resp = httpclient.execute(httpget);
             if (resp.getStatusLine().getStatusCode() == 200) {
+                if(resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                    throw new Exception(EntityUtils.toString(resp.getEntity()));
+                }
                 byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
                 File f = new File(directoryName);
                 if (!f.exists()) {
@@ -147,6 +153,9 @@ public class CaisoCRRDownloadClient {
             ClientUtil.addHeaders(httpget, "application/json", "application/octet-stream");
             CloseableHttpResponse resp = httpclient.execute(httpget);
             if (resp.getStatusLine().getStatusCode() == 200) {
+                if(resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                    throw new Exception(EntityUtils.toString(resp.getEntity()));
+                }
                 byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
                 File f = new File(directoryName);
                 if (!f.exists()) {
@@ -197,10 +206,10 @@ public class CaisoCRRDownloadClient {
                 "WCAL");
 //        List<SourceSink> ss = client.getSourceSink("AUC_MN_2026_M03", "/sesco/temp/caiso/crr");
 //        System.out.println(ss);
-//        client.getPublicAuctionResult("AUC_MN_2026_M03", "/sesco/temp/caiso/crr");
-//        client.geClearingPriceResult("AUC_MN_2026_M03", "/sesco/temp/caiso/crr");
+//        client.getPublicAuctionResult("AUC_MN_2026_M04", "/sesco/temp/caiso/crr");
+//        client.geClearingPriceResult("AUC_MN_2026_M04", "/sesco/temp/caiso/crr");
 //        client.geClearingPriceResult("AUC_MN_2026_M05", "/sesco/temp/caiso/crr");
-        client.getPrivateAuctionResult("AUC_MN_2026_M05", "/sesco/temp/caiso/crr");
+        client.getPrivateAuctionResult("AUC_MN_2026_M04", "/sesco/temp/caiso/crr");
 
     }
 }
