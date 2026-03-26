@@ -352,8 +352,6 @@ public class CaisoCRRAuctionClient {
         }
     }
 
-
-
     public static void main(String[] args) throws Exception {
         //CaisoECALapi_11_26_26.pfx
         //CaisoNCALapi_11_25_26.pfx
