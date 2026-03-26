@@ -208,8 +208,8 @@ public class CaisoCRRDownloadClient {
 //        System.out.println(ss);
 //        client.getPublicAuctionResult("AUC_MN_2026_M04", "/sesco/temp/caiso/crr");
 //        client.geClearingPriceResult("AUC_MN_2026_M04", "/sesco/temp/caiso/crr");
-//        client.geClearingPriceResult("AUC_MN_2026_M05", "/sesco/temp/caiso/crr");
-        client.getPrivateAuctionResult("AUC_MN_2026_M04", "/sesco/temp/caiso/crr");
+        client.geClearingPriceResult("AUC_MN_2026_M03", "/sesco/temp/caiso/crr");
+//        client.getPrivateAuctionResult("AUC_MN_2026_M04", "/sesco/temp/caiso/crr");
 
     }
 }
