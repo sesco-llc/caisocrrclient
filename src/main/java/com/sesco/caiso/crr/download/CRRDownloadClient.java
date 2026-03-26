@@ -37,6 +37,102 @@ public class CRRDownloadClient {
         d_schedulingCoordinator = schedulingCoordinator;
     }
 
+    public void getPublicAuctionResult(String marketName, String directoryName)throws Exception{
+        URI uri = new URIBuilder(d_baseURL + "/marketdata/v1.0/publicAuctionResult")
+                .addParameter("marketName", marketName)
+                .addParameter("fileFormat", "CSV")
+                .addParameter("publicAuctionResultDownloadType", "PUBLIC_AUCTION_RESULT")
+                .addParameter("participantName", d_schedulingCoordinator)
+                .build();
+        HttpGet httpget = new HttpGet(uri);
+        try (CloseableHttpClient httpclient = ClientUtil.getClientBuilder(d_certName, d_certPassword).build()) {
+            ClientUtil.addHeaders(httpget, "application/json", "application/octet-stream");
+            CloseableHttpResponse resp = httpclient.execute(httpget);
+            if (resp.getStatusLine().getStatusCode() == 200) {
+                byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
+                File f = new File(directoryName);
+                if (!f.exists()) {
+                    f.mkdirs();
+                }
+                FileUtils.writeByteArrayToFile(new File(f, "publicResults_" + marketName + ".zip"), bytes);
+//
+            } else {
+                String s = EntityUtils.toString(resp.getEntity());
+                System.out.println(s);
+                if (!s.isEmpty()) {
+                    Errors f = ClientUtil.mapper.readValue(s, Errors.class);
+                    throw new Exception(f.getErrorList().get(0).getErrorDescription());
+                } else {
+                    throw new Exception("No Results returned");
+                }
+            }
+        }
+    }
+    public void getPrivateAuctionResult(String marketName, String directoryName)throws Exception{
+        URI uri = new URIBuilder(d_baseURL + "/marketdata/v1.0/privateAuctionResult")
+                .addParameter("marketName", marketName)
+                .addParameter("fileFormat", "CSV")
+                .addParameter("privateAuctionResultDownloadType", "PRIVATE_AUCTION_RESULT")
+                .addParameter("participantName", d_schedulingCoordinator)
+                .build();
+        HttpGet httpget = new HttpGet(uri);
+        try (CloseableHttpClient httpclient = ClientUtil.getClientBuilder(d_certName, d_certPassword).build()) {
+            ClientUtil.addHeaders(httpget, "application/json", "application/octet-stream");
+            CloseableHttpResponse resp = httpclient.execute(httpget);
+            if (resp.getStatusLine().getStatusCode() == 200) {
+                if(resp.getFirstHeader("Content-Type").getValue().equals("text/html")) {
+                    throw new Exception(EntityUtils.toString(resp.getEntity()));
+                }
+                byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
+                File f = new File(directoryName);
+                if (!f.exists()) {
+                    f.mkdirs();
+                }
+                FileUtils.writeByteArrayToFile(new File(f, "privateResults_" + d_schedulingCoordinator + "_" + marketName + ".zip"), bytes);
+            } else {
+                String s = EntityUtils.toString(resp.getEntity());
+                System.out.println(s);
+                if (!s.isEmpty()) {
+                    Errors f = ClientUtil.mapper.readValue(s, Errors.class);
+                    throw new Exception(f.getErrorList().get(0).getErrorDescription());
+                } else {
+                    throw new Exception("No Results returned");
+                }
+            }
+        }
+    }
+
+    public void geClearingPriceResult(String marketName, String directoryName)throws Exception{
+        URI uri = new URIBuilder(d_baseURL + "/marketdata/v1.0/publicAuctionResult")
+                .addParameter("marketName", marketName)
+                .addParameter("fileFormat", "CSV")
+                .addParameter("publicAuctionResultDownloadType", "CLEARING_PRICE")
+                .addParameter("participantName", d_schedulingCoordinator)
+                .build();
+        HttpGet httpget = new HttpGet(uri);
+        try (CloseableHttpClient httpclient = ClientUtil.getClientBuilder(d_certName, d_certPassword).build()) {
+            ClientUtil.addHeaders(httpget, "application/json", "application/octet-stream");
+            CloseableHttpResponse resp = httpclient.execute(httpget);
+            if (resp.getStatusLine().getStatusCode() == 200) {
+                byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
+                File f = new File(directoryName);
+                if (!f.exists()) {
+                    f.mkdirs();
+                }
+                FileUtils.writeByteArrayToFile(new File(f, "clearingprices_" + marketName + ".zip"), bytes);
+//
+            } else {
+                String s = EntityUtils.toString(resp.getEntity());
+                if (!s.isEmpty()) {
+                    Errors f = ClientUtil.mapper.readValue(s, Errors.class);
+                    throw new Exception(f.getErrorList().get(0).getErrorDescription());
+                } else {
+                    throw new Exception("No Results returned");
+                }
+            }
+        }
+    }
+
     public List<SourceSink> getSourceSink(String marketName, String directoryName) throws Exception {
 
         URI uri = new URIBuilder(d_baseURL + "/marketdata/v1.0/publicMarketData")
@@ -48,7 +144,7 @@ public class CRRDownloadClient {
 
         HttpGet httpget = new HttpGet(uri);
         try (CloseableHttpClient httpclient = ClientUtil.getClientBuilder(d_certName, d_certPassword).build()) {
-            ClientUtil.addHeaders(httpget, "application/json", "application/json");
+            ClientUtil.addHeaders(httpget, "application/json", "application/octet-stream");
             CloseableHttpResponse resp = httpclient.execute(httpget);
             if (resp.getStatusLine().getStatusCode() == 200) {
                 byte[] bytes = EntityUtils.toByteArray(resp.getEntity());
@@ -77,18 +173,34 @@ public class CRRDownloadClient {
                 }
                 return ClientUtil.mapper.readValue(stb.toString(), new TypeReference<List<SourceSink>>() {});
             } else {
-                Errors f = ClientUtil.mapper.readValue(EntityUtils.toString(resp.getEntity()), Errors.class);
-                throw new Exception(f.getErrorList().get(0).getErrorDescription());
+                String s = EntityUtils.toString(resp.getEntity());
+                if (!s.isEmpty()) {
+                    Errors f = ClientUtil.mapper.readValue(s, Errors.class);
+                    throw new Exception(f.getErrorList().get(0).getErrorDescription());
+                } else {
+                    throw new Exception("No Results returned");
+                }
             }
         }
     }
 
     public static void main(String[] args) throws Exception {
-        CRRDownloadClient client = new CRRDownloadClient("/sesco/certs/CaisoWCALapi_11_26_26.pfx",
+        //CaisoECALapi_11_26_26.pfx
+        //CaisoNCALapi_11_25_26.pfx
+        //CaisoSCALapi_11_25_26.pfx
+        //CaisoWCALapi_11_26_26.pfx
+        //CaisoYCALapi_11_26_26.pfx
+        CRRDownloadClient client = new CRRDownloadClient(
+                "/sesco/certs/CaisoWCALapi_11_26_26.pfx",
                 "Solomon01",
                 "https://api.caiso.com/crr",
                 "WCAL");
-        List<SourceSink> ss = client.getSourceSink("AUC_MN_2026_M03", "/sesco/temp/caiso/crr");
-        System.out.println(ss);
+//        List<SourceSink> ss = client.getSourceSink("AUC_MN_2026_M03", "/sesco/temp/caiso/crr");
+//        System.out.println(ss);
+//        client.getPublicAuctionResult("AUC_MN_2026_M03", "/sesco/temp/caiso/crr");
+//        client.geClearingPriceResult("AUC_MN_2026_M03", "/sesco/temp/caiso/crr");
+//        client.geClearingPriceResult("AUC_MN_2026_M05", "/sesco/temp/caiso/crr");
+        client.getPrivateAuctionResult("AUC_MN_2026_M05", "/sesco/temp/caiso/crr");
+
     }
 }
