@@ -20,6 +20,29 @@ import java.util.List;
         "description"
 })
 public class Bid {
+    public HedgeType getHedgeType() {
+        return hedgeType;
+    }
+
+    public void setHedgeType(HedgeType hedgeType) {
+        this.hedgeType = hedgeType;
+    }
+
+    public TOU getTou() {
+        return tou;
+    }
+
+    public void setTou(TOU tou) {
+        this.tou = tou;
+    }
+
+    public CRRType getCrrType() {
+        return crrType;
+    }
+
+    public void setCrrType(CRRType crrType) {
+        this.crrType = crrType;
+    }
 
     @JsonProperty("bidId")
     private Integer bidId;
@@ -30,13 +53,13 @@ public class Bid {
     @JsonProperty("sink")
     private String sink;
     @JsonProperty("hedgeType")
-    private String hedgeType;
+    private HedgeType hedgeType;
     @JsonProperty("tou")
-    private String tou;
+    private TOU tou;
     @JsonProperty("period")
     private String period;
     @JsonProperty("crrType")
-    private String crrType;
+    private CRRType crrType;
     @JsonProperty("bidCurve")
     private List<BidCurve> bidCurve;
     @JsonProperty("description")
@@ -83,25 +106,6 @@ public class Bid {
         this.sink = sink;
     }
 
-    @JsonProperty("hedgeType")
-    public String getHedgeType() {
-        return hedgeType;
-    }
-
-    @JsonProperty("hedgeType")
-    public void setHedgeType(String hedgeType) {
-        this.hedgeType = hedgeType;
-    }
-
-    @JsonProperty("tou")
-    public String getTou() {
-        return tou;
-    }
-
-    @JsonProperty("tou")
-    public void setTou(String tou) {
-        this.tou = tou;
-    }
 
     @JsonProperty("period")
     public String getPeriod() {
@@ -111,16 +115,6 @@ public class Bid {
     @JsonProperty("period")
     public void setPeriod(String period) {
         this.period = period;
-    }
-
-    @JsonProperty("crrType")
-    public String getCrrType() {
-        return crrType;
-    }
-
-    @JsonProperty("crrType")
-    public void setCrrType(String crrType) {
-        this.crrType = crrType;
     }
 
     @JsonProperty("bidCurve")

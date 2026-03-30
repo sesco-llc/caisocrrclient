@@ -28,6 +28,33 @@ public class CaisoCRRMarketStatusClient {
     }
 
     public List<Auction> getActiveMarkets() throws Exception {
+        URI uri = new URIBuilder(d_baseURL + "/marketstatus/v1.0/activeAuctionMarkets")
+                .addParameter("participantName", d_schedulingCoordinator)
+                .build();
+
+        HttpGet httpget = new HttpGet(uri);
+        try (CloseableHttpClient httpclient = ClientUtil.getClientBuilder(d_certName, d_certPassword).build()) {
+            ClientUtil.addHeaders(httpget, "application/json", "application/json");
+            CloseableHttpResponse resp = httpclient.execute(httpget);
+            if (resp.getStatusLine().getStatusCode() == 200) {
+                if (resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                    throw new Exception(EntityUtils.toString(resp.getEntity()));
+                }
+                return ClientUtil.mapper.readValue(EntityUtils.toString(resp.getEntity()), new TypeReference<List<Auction>>() {
+                });
+            } else {
+                String s = EntityUtils.toString(resp.getEntity());
+                if (!s.isEmpty()) {
+                    Errors f = ClientUtil.mapper.readValue(s, Errors.class);
+                    throw new Exception(f.getErrorList().get(0).getErrorDescription());
+                } else {
+                    throw new Exception("No Results returned");
+                }
+            }
+        }
+    }
+
+    public List<Auction> getPostedMarkets() throws Exception {
         URI uri = new URIBuilder(d_baseURL + "/marketstatus/v1.0/postedAuctionMarkets")
                 .addParameter("participantName", d_schedulingCoordinator)
                 .build();
@@ -54,6 +81,59 @@ public class CaisoCRRMarketStatusClient {
         }
     }
 
+    public String getMarketStatus(String auctionName) throws Exception {
+        URI uri = new URIBuilder(d_baseURL + "/marketstatus/v1.0/marketStatus")
+                .addParameter("marketName", auctionName)
+                .addParameter("participantName", d_schedulingCoordinator)
+                .build();
+
+        HttpGet httpget = new HttpGet(uri);
+        try (CloseableHttpClient httpclient = ClientUtil.getClientBuilder(d_certName, d_certPassword).build()) {
+            ClientUtil.addHeaders(httpget, "application/json", "application/json");
+            CloseableHttpResponse resp = httpclient.execute(httpget);
+            if (resp.getStatusLine().getStatusCode() == 200) {
+                if (resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                    throw new Exception(EntityUtils.toString(resp.getEntity()));
+                }
+                return EntityUtils.toString(resp.getEntity());
+            } else {
+                String s = EntityUtils.toString(resp.getEntity());
+                if (!s.isEmpty()) {
+                    Errors f = ClientUtil.mapper.readValue(s, Errors.class);
+                    throw new Exception(f.getErrorList().get(0).getErrorDescription());
+                } else {
+                    throw new Exception("No Results returned");
+                }
+            }
+        }
+    }
+
+    public Auction getMarketInfo(String auctionName) throws Exception {
+        URI uri = new URIBuilder(d_baseURL + "/marketstatus/v1.0/marketInfo")
+                .addParameter("marketName", auctionName)
+                .addParameter("participantName", d_schedulingCoordinator)
+                .build();
+
+        HttpGet httpget = new HttpGet(uri);
+        try (CloseableHttpClient httpclient = ClientUtil.getClientBuilder(d_certName, d_certPassword).build()) {
+            ClientUtil.addHeaders(httpget, "application/json", "application/json");
+            CloseableHttpResponse resp = httpclient.execute(httpget);
+            if (resp.getStatusLine().getStatusCode() == 200) {
+                if (resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
+                    throw new Exception(EntityUtils.toString(resp.getEntity()));
+                }
+                return ClientUtil.mapper.readValue(EntityUtils.toString(resp.getEntity()), Auction.class);
+            } else {
+                String s = EntityUtils.toString(resp.getEntity());
+                if (!s.isEmpty()) {
+                    Errors f = ClientUtil.mapper.readValue(s, Errors.class);
+                    throw new Exception(f.getErrorList().get(0).getErrorDescription());
+                } else {
+                    throw new Exception("No Results returned");
+                }
+            }
+        }
+    }
 
     public static void main(String[] args) throws Exception {
         //CaisoECALapi_11_26_26.pfx
@@ -67,9 +147,23 @@ public class CaisoCRRMarketStatusClient {
                 "https://api.caiso.com/crr",
                 "WCAL");
 
-        List<Auction> a = client.getActiveMarkets();
-        System.out.println("Active Markets:" + a);
+//        List<Auction> a = client.getActiveMarkets();
+//        LocalDateTime totday = LocalDateTime.now();
+//        List<Auction> b = a.stream().filter(new Predicate<Auction>() {
+//            @Override
+//            public boolean test(Auction auction) {
+//                Instant instant = Instant.parse(auction.getSubmissionWindow().getCloseDate());
+//
+//                // 2. Convert the Instant to a LocalDateTime using the system's default time zone
+//                LocalDateTime closeDateTime = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
+//
+//                return closeDateTime.isAfter(totday);
+//            }
+//        }).collect(Collectors.toList());
+//        System.out.println("Active Markets:" +b);
+        Auction s = client.getMarketInfo("AUC_AN_2026");
 
+        System.out.println("Status:" + s);
     }
 
 }

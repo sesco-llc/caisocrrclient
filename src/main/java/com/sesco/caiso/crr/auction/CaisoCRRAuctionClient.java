@@ -151,7 +151,6 @@ public class CaisoCRRAuctionClient {
             ClientUtil.addHeaders(httpPost, "application/json", "application/json");
 
             PortfolioCreateRequest createRequest = createRequest(marketName, portfolioName, submissions, marketsMap);
-            httpPost.setEntity(new StringEntity(ClientUtil.mapper.writeValueAsString(createRequest)));
             CloseableHttpResponse resp = httpclient.execute(httpPost);
             if (resp.getStatusLine().getStatusCode() == 200) {
                 if (resp.getFirstHeader("Content-Type").getValue().startsWith("text/html")) {
@@ -169,6 +168,8 @@ public class CaisoCRRAuctionClient {
             }
         }
     }
+
+
 
     private PortfolioCreateRequest createRequest(String marketName, String portfolioName, Collection<bot_FTRSubmission> submissions,
                                                  maps_FTRMarkets marketsMap) {
@@ -190,12 +191,12 @@ public class CaisoCRRAuctionClient {
 
             newBid.setSource(bidSubmission.getSourceNode().getShortName());
             newBid.setSink(bidSubmission.getSinkNode().getShortName());
-            newBid.setHedgeType("OBL");
-            newBid.setTou(bidSubmission.getTradeHourType().equals(dome_HourType.Peak) ? "ON" : "OFF");
+            newBid.setHedgeType(HedgeType.OBL);
+            newBid.setTou(bidSubmission.getTradeHourType().equals(dome_HourType.Peak) ? TOU.ON : TOU.OFF);
             bopftr_Market market = marketsMap.get( bidSubmission.getMarketID());
             String periodStr = convertMonthYearToFormattedPeriodString(market.getMarketName());
             newBid.setPeriod(periodStr);
-            newBid.setCrrType("AUC");
+            newBid.setCrrType(CRRType.AUC);
             List<BidCurve> bcl = new ArrayList<>();
             BidCurve bc = new BidCurve();
             bc.setMw(0.0);
@@ -219,12 +220,12 @@ public class CaisoCRRAuctionClient {
             newOffer.setCrrId(offerSubmission.getIsoSourceTradeID());
             newOffer.setSource(offerSubmission.getSourceNode().getShortName());
             newOffer.setSink(offerSubmission.getSinkNode().getShortName());
-            newOffer.setHedgeType("OBL");
-            newOffer.setTou(offerSubmission.getTradeHourType().equals(dome_HourType.Peak) ? "ON" : "OFF");
+            newOffer.setHedgeType(HedgeType.OBL);
+            newOffer.setTou(offerSubmission.getTradeHourType().equals(dome_HourType.Peak) ? TOU.ON : TOU.OFF);
             bopftr_Market market = marketsMap.get( offerSubmission.getMarketID());
             String periodStr = convertMonthYearToFormattedPeriodString(market.getMarketName());
             newOffer.setPeriod(periodStr);
-            newOffer.setCrrType("AUC");
+            newOffer.setCrrType(CRRType.AUC);
             List<BidCurve> bcl = new ArrayList<>();
             BidCurve bc = new BidCurve();
             bc.setMw(0.0);
@@ -303,7 +304,7 @@ public class CaisoCRRAuctionClient {
             ClientUtil.addHeaders(httpPost, "application/json", "application/json");
             PortfolioSubmissionRetractionRequest submissionRetractionRequest = new PortfolioSubmissionRetractionRequest();
             submissionRetractionRequest.setMarketName(marketName);
-            submissionRetractionRequest.setParticipantName(portfolioName);
+            submissionRetractionRequest.setParticipantName(d_schedulingCoordinator);
             submissionRetractionRequest.setPortfolioName(portfolioName);
             httpPost.setEntity(new StringEntity(ClientUtil.mapper.writeValueAsString(submissionRetractionRequest)));
             CloseableHttpResponse resp = httpclient.execute(httpPost);
@@ -394,10 +395,13 @@ public class CaisoCRRAuctionClient {
                 "https://api.caiso.com/crr",
                 "WCAL");
 
-//        List<Portfolio> p = client.getPortfolioList("AUC_MN_2026_M03");
-//        Portfolio p = client.getPortfolio("AUC_MN_2026_M03", "March MNTHLY 26");
-//        PortfolioStatus p = client.getPortfolioStatus("AUC_MN_2026_M03", "March MNTHLY 26");
-        PortfolioRequiredCredit p = client.getPortfolioRequiredCredit("AUC_MN_2026_M03", "March MNTHLY 26");
+        List<Portfolio> p = client.getPortfolioList("AUC_MN_2026_M03");
+//        Portfolio p = client.getPortfolio("AUC_MN_2025_M03", "March test 2");
+//        PortfolioStatus p = client.getPortfolioStatus("AUC_MN_2025_M03", "March test 2");
+
+        //OK for testing I retract and Delete this portfolio
+//        PortfolioStatus p = client.retractPortfolio("AUC_MN_2025_M03", "March test 2");
+//        PortfolioRequiredCredit p = client.getPortfolioRequiredCredit("AUC_MN_2025_M03", "March MNTHLY 26");
         System.out.println("Active Pot:" + p);
         //March MNTHLY 26
 

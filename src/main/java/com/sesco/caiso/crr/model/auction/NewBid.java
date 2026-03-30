@@ -28,13 +28,18 @@ public class NewBid {
     @JsonProperty("sink")
     private String sink;
     @JsonProperty("hedgeType")
-    private String hedgeType;
+    private HedgeType hedgeType;
     @JsonProperty("tou")
-    private String tou;
+    private TOU tou;
+
+    public void setCrrType(CRRType crrType) {
+        this.crrType = crrType;
+    }
+
     @JsonProperty("period")
     private String period;
     @JsonProperty("crrType")
-    private String crrType;
+    private CRRType crrType;
     @JsonProperty("bidCurve")
     private List<BidCurve> bidCurve;
     @JsonProperty("description")
@@ -71,22 +76,22 @@ public class NewBid {
     }
 
     @JsonProperty("hedgeType")
-    public String getHedgeType() {
+    public HedgeType getHedgeType() {
         return hedgeType;
     }
 
     @JsonProperty("hedgeType")
-    public void setHedgeType(String hedgeType) {
+    public void setHedgeType(HedgeType hedgeType) {
         this.hedgeType = hedgeType;
     }
 
     @JsonProperty("tou")
-    public String getTou() {
+    public TOU getTou() {
         return tou;
     }
 
     @JsonProperty("tou")
-    public void setTou(String tou) {
+    public void setTou(TOU tou) {
         this.tou = tou;
     }
 
@@ -98,16 +103,6 @@ public class NewBid {
     @JsonProperty("period")
     public void setPeriod(String period) {
         this.period = period;
-    }
-
-    @JsonProperty("crrType")
-    public String getCrrType() {
-        return crrType;
-    }
-
-    @JsonProperty("crrType")
-    public void setCrrType(String crrType) {
-        this.crrType = crrType;
     }
 
     @JsonProperty("bidCurve")
@@ -130,4 +125,7 @@ public class NewBid {
         this.description = description;
     }
 
+    public CRRType getCrrType() {
+        return crrType;
+    }
 }

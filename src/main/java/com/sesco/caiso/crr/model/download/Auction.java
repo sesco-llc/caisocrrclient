@@ -89,4 +89,16 @@ public class Auction {
     public void setProducts(List<Product> products) {
         this.products = products;
     }
+
+    @Override
+    public String toString() {
+        return "Auction{" +
+               "name='" + name + '\'' +
+               ", marketType='" + marketType + '\'' +
+               ", marketTerm='" + marketTerm + '\'' +
+               ", dataPublishDate='" + dataPublishDate + '\'' +
+               ", submissionWindow=" + submissionWindow +
+               ", products=" + products +
+               '}';
+    }
 }
