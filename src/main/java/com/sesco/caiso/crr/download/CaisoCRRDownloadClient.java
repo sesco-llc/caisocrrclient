@@ -1,8 +1,6 @@
 package com.sesco.caiso.crr.download;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.sesco.caiso.crr.model.Errors;
-import com.sesco.caiso.crr.model.download.SourceSink;
 import com.sesco.caiso.crr.util.ClientUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -11,16 +9,8 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 public class CaisoCRRDownloadClient {
     String d_certName;
@@ -139,7 +129,7 @@ public class CaisoCRRDownloadClient {
         }
     }
 
-    public List<SourceSink> getSourceSink(String marketName, String directoryName) throws Exception {
+    public String getSourceSink(String marketName, String directoryName) throws Exception {
 
         URI uri = new URIBuilder(d_baseURL + "/marketdata/v1.0/publicMarketData")
                 .addParameter("marketName", marketName)
@@ -161,27 +151,8 @@ public class CaisoCRRDownloadClient {
                 if (!f.exists()) {
                     f.mkdirs();
                 }
-                FileUtils.writeByteArrayToFile(new File(f, "ss.zip"), bytes);
-                StringBuilder stb = new StringBuilder(1024);
-                try (ZipFile zipFile = new ZipFile(new File(f, "ss.zip"))) {
-                    Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
-                    ZipEntry entry = zipFile.getEntry(zipEntries.nextElement().getName());
-
-                    if (entry != null) {
-                        try (InputStream stream = zipFile.getInputStream(entry)) {
-                            BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-
-                            String line = null;
-                            while ((line = reader.readLine()) != null) {
-                                stb.append(line);
-                            }
-                        }
-                    } else {
-                        System.out.println("File not found in the archive.");
-                    }
-                }
-                return ClientUtil.mapper.readValue(stb.toString(), new TypeReference<List<SourceSink>>() {
-                });
+                FileUtils.writeByteArrayToFile(new File(f, marketName + "_SourceSink.zip"), bytes);
+               return marketName + "_SourceSink.zip";
             } else {
                 String s = EntityUtils.toString(resp.getEntity());
                 if (!s.isEmpty()) {
@@ -205,12 +176,12 @@ public class CaisoCRRDownloadClient {
                 "Solomon01",
                 "https://api.caiso.com/crr",
                 "WCAL");
-//        List<SourceSink> ss = client.getSourceSink("AUC_MN_2026_M03", "/sesco/temp/caiso/crr");
+        String ss = client.getSourceSink("AUC_MN_2026_M04", "/sesco/temp/caiso/crr");
 //        System.out.println(ss);
 //        client.getPublicAuctionResult("AUC_MN_2026_M04", "/sesco/temp/caiso/crr");
 //        client.geClearingPriceResult("AUC_MN_2026_M04", "/sesco/temp/caiso/crr");
-        client.geClearingPriceResult("AUC_MN_2026_M03", "/sesco/temp/caiso/crr");
-//        client.getPrivateAuctionResult("AUC_MN_2026_M04", "/sesco/temp/caiso/crr");
-
+//        client.geClearingPriceResult("AUC_AN_2026", "/sesco/temp/caiso/crr");
+//        client.getPrivateAuctionResult("AUC_AN_2026_M04", "/sesco/temp/caiso/crr");
+          System.out.println(ss);
     }
 }
