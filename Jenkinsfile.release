@@ -1,0 +1,135 @@
+pipeline {
+    agent any
+
+    environment {
+        JARS_DIR    = '/data/sescoapps/sesco/jars'
+        JOB_SERVER = "ponos.sesco.com"
+        USER = "sescojobs"
+        HOST_KEY = "~/.ssh/sescojobs-rsa"
+    }
+
+    tools {
+        maven 'Maven'
+        jdk   'JDK17FX'
+    }
+
+    stages {
+        stage('Prepare Workspace') {
+            steps {
+                // Ensure git identity is set for SCM commits made by the release plugin
+                sh 'git config user.email "sescobuilder@sesco.com"'
+                sh 'git config user.name "sescobuilder"'
+
+                // Force-align local master to origin — guards against diverged state
+                // from previous failed runs or force-pushes
+                sh 'git fetch origin && git checkout -B master origin/master'
+
+                // Delete any stale local tags left over from previous failed runs
+                sh 'git tag -l | xargs git tag -d 2>/dev/null || true'
+
+                // Remove any leftover Maven release files (release.properties,
+                // pom.xml.releaseBackup) from previous failed runs
+                sh 'mvn -B release:clean'
+            }
+        }
+
+        stage('Build & Test') {
+            steps {
+                // -B = batch/non-interactive mode (no progress output, good for CI logs)
+                // verify = compile, test, and package — stops short of installing to local Maven repo
+                sh 'mvn -B clean verify'
+            }
+        }
+
+        stage('Maven Release Prepare') {
+            steps {
+                script {
+                    // Read the current -SNAPSHOT version from pom.xml so we know what
+                    // release version to tag. e.g. "1.4.0-SNAPSHOT" → "1.4.0"
+                    def snapshotVersion = sh(
+                        script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout',
+                        returnStdout: true
+                    ).trim()
+
+                    env.ARTIFACT_ID     = sh(
+                        script: 'mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout',
+                        returnStdout: true
+                    ).trim()
+
+                    env.RELEASE_VERSION = snapshotVersion.replace('-SNAPSHOT', '')
+
+                    // release:prepare does three things:
+                    //   1. Strips -SNAPSHOT from the version, commits and tags in git
+                    //   2. Builds and verifies the release version
+                    //   3. Bumps the pom to the next -SNAPSHOT version and commits
+                    // At this point the workspace is on the next snapshot; the release
+                    // tag exists in git but hasn't been built into a deployable artifact yet.
+                    sh 'mvn -B release:prepare'
+                }
+            }
+        }
+
+        stage('Build Release Artifact') {
+            steps {
+                script {
+                    env.RELEASE_TAG = "v${env.RELEASE_VERSION}"
+                    env.RELEASE_BUILD_DIR = "${env.WORKSPACE}/target/release-build"
+                }
+                sh '''
+                    set -e
+                    rm -rf "${RELEASE_BUILD_DIR}"
+                    git clone --branch "${RELEASE_TAG}" --depth 1 . "${RELEASE_BUILD_DIR}"
+                    cd "${RELEASE_BUILD_DIR}"
+                    mvn -B clean package
+                '''
+            }
+        }
+
+        stage('Deploy to User Apps Deployment dir') {
+            steps {
+                sh '''
+                    set -e
+                    cp "${RELEASE_BUILD_DIR}/target/${ARTIFACT_ID}-${RELEASE_VERSION}.jar" \
+                       "${JARS_DIR}/${ARTIFACT_ID}.jar"
+                '''
+            }
+        }
+
+        stage('Deploy to Ponos') {
+            steps {
+                sh '''
+                    set -e
+                    echo "Executing command on ${JOB_SERVER}: ~/bin/getMavenJar.sh ${ARTIFACT_ID} ${RELEASE_VERSION}"
+                    ssh -i "${HOST_KEY}" \
+                        -o StrictHostKeyChecking=no \
+                        -o UserKnownHostsFile=/dev/null \
+                        "${USER}@${JOB_SERVER}" \
+                        "~/bin/getMavenJar.sh ${ARTIFACT_ID} ${RELEASE_VERSION}"
+                '''
+            }
+        }
+
+        stage('Maven Release Perform') {
+            steps {
+                // release:perform checks out the release tag created in the Prepare stage,
+                // builds it, and deploys the artifact to the Maven repository (Nexus).
+                // This is separate from the Docker deploy above — it publishes the jar
+                // so other projects can declare it as a Maven dependency.
+                sh 'mvn -B release:perform'
+            }
+        }
+
+
+
+    }
+
+    post {
+        failure {
+            // If anything goes wrong, undo the git tag and pom version changes made
+            // by release:prepare so the next run starts from a clean state.
+            // '|| true' prevents these cleanup steps from masking the original error.
+            sh 'mvn -B release:rollback || true'
+            sh 'mvn -B release:clean || true'
+        }
+    }
+}
