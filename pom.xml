@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>caisocrrclient</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <parent>
         <groupId>com.sesco</groupId>
@@ -15,7 +15,7 @@
         <connection>scm:git:git@github.com:sesco-llc/caisocrrclient.git</connection>
         <developerConnection>scm:git:git@github.com:sesco-llc/caisocrrclient.git</developerConnection>
         <url>https://github.com/sesco-llc/caisocrrclient</url>
-        <tag>v1.0.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <properties>
