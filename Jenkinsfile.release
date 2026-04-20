@@ -5,7 +5,6 @@ pipeline {
         JARS_DIR    = '/data/sescoapps/sesco/jars'
         JOB_SERVER = "ponos.sesco.com"
         USER = "sescojobs"
-        HOST_KEY = "~/.ssh/sescojobs-rsa"
     }
 
     tools {
@@ -77,6 +76,8 @@ pipeline {
                 }
                 sh '''
                     set -e
+                    # Build from the git tag created by release:prepare so both deploy
+                    # targets receive the exact release artifact, not the bumped snapshot.
                     rm -rf "${RELEASE_BUILD_DIR}"
                     git clone --branch "${RELEASE_TAG}" --depth 1 . "${RELEASE_BUILD_DIR}"
                     cd "${RELEASE_BUILD_DIR}"
@@ -89,8 +90,22 @@ pipeline {
             steps {
                 sh '''
                     set -e
-                    cp "${RELEASE_BUILD_DIR}/target/${ARTIFACT_ID}-${RELEASE_VERSION}.jar" \
-                       "${JARS_DIR}/${ARTIFACT_ID}.jar"
+                    TARGET_JAR="${JARS_DIR}/${ARTIFACT_ID}.jar"
+                    PREV_JAR="${JARS_DIR}/${ARTIFACT_ID}.jar.prev"
+                    NEW_JAR="${JARS_DIR}/${ARTIFACT_ID}.jar.new"
+
+                    # SMB consumers need a real file, not a symlink. Use .new/.prev so
+                    # we can swap atomically enough for deployment and restore on failure.
+                    rm -f "${NEW_JAR}"
+                    cp "${RELEASE_BUILD_DIR}/target/${ARTIFACT_ID}-${RELEASE_VERSION}.jar" "${NEW_JAR}"
+
+                    if [ -f "${TARGET_JAR}" ]; then
+                        mv -f "${TARGET_JAR}" "${PREV_JAR}"
+                    else
+                        rm -f "${PREV_JAR}"
+                    fi
+
+                    mv -f "${NEW_JAR}" "${TARGET_JAR}"
                 '''
             }
         }
@@ -99,12 +114,41 @@ pipeline {
             steps {
                 sh '''
                     set -e
-                    echo "Executing command on ${JOB_SERVER}: ~/bin/getMavenJar.sh ${ARTIFACT_ID} ${RELEASE_VERSION}"
-                    ssh -i "${HOST_KEY}" \
+                    SSH_KEY="${HOME}/.ssh/sescojobs-rsa"
+                    REMOTE_JAR="~/jars/${ARTIFACT_ID}-${RELEASE_VERSION}.jar"
+                    REMOTE_LINK="~/jars/${ARTIFACT_ID}.jar"
+                    REMOTE_BACKUP="~/jars/${ARTIFACT_ID}.jar.prev"
+                    REMOTE_PREV_TARGET="~/jars/${ARTIFACT_ID}.jar.prev-target"
+
+                    # Ponos can use a stable symlink. Preserve either the previous file
+                    # or the previous symlink target locally on Ponos for rollback.
+                    ssh -i "${SSH_KEY}" \
                         -o StrictHostKeyChecking=no \
                         -o UserKnownHostsFile=/dev/null \
                         "${USER}@${JOB_SERVER}" \
-                        "~/bin/getMavenJar.sh ${ARTIFACT_ID} ${RELEASE_VERSION}"
+                        "set -e
+                        mkdir -p ~/jars
+                        rm -f ${REMOTE_PREV_TARGET}
+                        if [ -L ${REMOTE_LINK} ]; then
+                            readlink ${REMOTE_LINK} > ${REMOTE_PREV_TARGET}
+                        elif [ -f ${REMOTE_LINK} ]; then
+                            mv -f ${REMOTE_LINK} ${REMOTE_BACKUP}
+                        fi"
+
+                    echo "Copying ${ARTIFACT_ID}-${RELEASE_VERSION}.jar to ${JOB_SERVER}:${REMOTE_JAR}"
+
+                    scp -i "${SSH_KEY}" \
+                        -o StrictHostKeyChecking=no \
+                        -o UserKnownHostsFile=/dev/null \
+                        "${RELEASE_BUILD_DIR}/target/${ARTIFACT_ID}-${RELEASE_VERSION}.jar" \
+                        "${USER}@${JOB_SERVER}:${REMOTE_JAR}"
+
+                    echo "Updating ${JOB_SERVER}:${REMOTE_LINK} -> ${REMOTE_JAR}"
+                    ssh -i "${SSH_KEY}" \
+                        -o StrictHostKeyChecking=no \
+                        -o UserKnownHostsFile=/dev/null \
+                        "${USER}@${JOB_SERVER}" \
+                        "ln -sfn ${REMOTE_JAR} ${REMOTE_LINK}"
                 '''
             }
         }
@@ -124,7 +168,57 @@ pipeline {
     }
 
     post {
+        success {
+            sh '''
+                set -e
+                SSH_KEY="${HOME}/.ssh/sescojobs-rsa"
+                PREV_JAR="${JARS_DIR}/${ARTIFACT_ID}.jar.prev"
+
+                # Commit the deployment by removing rollback markers after the full
+                # release, including release:perform, has succeeded.
+                rm -f "${PREV_JAR}"
+                ssh -i "${SSH_KEY}" \
+                    -o StrictHostKeyChecking=no \
+                    -o UserKnownHostsFile=/dev/null \
+                    "${USER}@${JOB_SERVER}" \
+                    "rm -f ~/jars/${ARTIFACT_ID}.jar.prev ~/jars/${ARTIFACT_ID}.jar.prev-target" || true
+            '''
+        }
         failure {
+            sh '''
+                set +e
+                SSH_KEY="${HOME}/.ssh/sescojobs-rsa"
+                TARGET_JAR="${JARS_DIR}/${ARTIFACT_ID}.jar"
+                PREV_JAR="${JARS_DIR}/${ARTIFACT_ID}.jar.prev"
+                REMOTE_LINK="~/jars/${ARTIFACT_ID}.jar"
+                REMOTE_BACKUP="~/jars/${ARTIFACT_ID}.jar.prev"
+                REMOTE_PREV_TARGET="~/jars/${ARTIFACT_ID}.jar.prev-target"
+
+                # Restore the pre-release runtime state so the release can be retried
+                # cleanly if any later stage, including release:perform, fails.
+                if [ -f "${PREV_JAR}" ]; then
+                    mv -f "${PREV_JAR}" "${TARGET_JAR}"
+                else
+                    rm -f "${TARGET_JAR}"
+                fi
+
+                ssh -i "${SSH_KEY}" \
+                    -o StrictHostKeyChecking=no \
+                    -o UserKnownHostsFile=/dev/null \
+                    "${USER}@${JOB_SERVER}" \
+                    "set +e
+                    if [ -f ${REMOTE_PREV_TARGET} ]; then
+                        PREV_TARGET=\$(cat ${REMOTE_PREV_TARGET})
+                        ln -sfn \${PREV_TARGET} ${REMOTE_LINK}
+                    elif [ -f ${REMOTE_BACKUP} ]; then
+                        rm -f ${REMOTE_LINK}
+                        mv -f ${REMOTE_BACKUP} ${REMOTE_LINK}
+                    else
+                        rm -f ${REMOTE_LINK}
+                    fi
+                    rm -f ${REMOTE_BACKUP} ${REMOTE_PREV_TARGET}" || true
+            '''
+
             // If anything goes wrong, undo the git tag and pom version changes made
             // by release:prepare so the next run starts from a clean state.
             // '|| true' prevents these cleanup steps from masking the original error.
